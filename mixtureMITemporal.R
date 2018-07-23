@@ -442,8 +442,8 @@ impute_em_rrg_obs_only <- function(impi,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec
             rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
             names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
 
-            lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-            lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+            rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+            rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
             prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
 
         } else {
