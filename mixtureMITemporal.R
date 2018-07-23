@@ -442,6 +442,10 @@ impute_em_rrg_obs_only <- function(impi,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec
             rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
             names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
 
+            lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+            lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+            prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+
         } else {
             ll = source(sprintf("%s.ll",w_fn))$value
             pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
@@ -461,34 +465,28 @@ impute_em_rrg_obs_only <- function(impi,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             lr_prediction2 = x2[!ry,  ] %*% lr_beta2
 
-            if (mix_model_num == 2) {
-                # RR
-                # prediction = sapply(1:Nstar, function(i) {pi1 * lr_prediction1[i] + pi2 * lr_prediction2[i]})
-                prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
-            } else {
-                Ystar = pt_df[!ry,]
+            Ystar = pt_df[!ry,]
             
-                xtr_vec_star = xtr_vec[!ry,]
-                xte_vec_star = xte_vec[!ry]
-                r_v_star = r_v[!ry,]
+            xtr_vec_star = xtr_vec[!ry,]
+            xte_vec_star = xte_vec[!ry]
+            r_v_star = r_v[!ry,]
 
-                if (Nstar == 1) {
-                    Ystar = t(as.matrix(Ystar))
-                }
+            if (Nstar == 1) {
+                Ystar = t(as.matrix(Ystar))
+            }
 
-                GPprediction_res = list()
-                for (i in 1:Nstar) {
-                    GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
-                }
-                gp_prediction = sapply(GPprediction_res, function(x) x$pred)
-                
-                if (mix_model_num == 1) {
-                    # RRG
-                    prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
-                } else {
-                    # GP
-                    prediction = gp_prediction
-                }
+            GPprediction_res = list()
+            for (i in 1:Nstar) {
+                GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
+            }
+            gp_prediction = sapply(GPprediction_res, function(x) x$pred)
+            
+            if (mix_model_num == 1) {
+                # RRG
+                prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
+            } else {
+                # GP
+                prediction = gp_prediction
             }
         }
         
