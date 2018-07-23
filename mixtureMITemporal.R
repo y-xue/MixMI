@@ -272,7 +272,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             if (sy[i] == TRUE) {
                 ts = pt_df[i,-t][r_v[i,]]
                 # if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
-                if (sum(r_v[i,] == 0)) {
+                if (sum(r_v[i,]) == 0) {
                     sy[i] = FALSE
                 }
             }
