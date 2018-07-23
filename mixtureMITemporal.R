@@ -416,7 +416,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         }
         rrg_rescale_rr_prediction = (pi1 * lr_prediction1 + pi2 * lr_prediction2) / (1 - pi3)
 
-        if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
+        # if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
+        if (rr_param$abs_error < rrg_param$abs_error)
             mix_model_num = rr_param$mix_model_num
             prediction = rr_prediction
         } else {
