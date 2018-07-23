@@ -429,39 +429,41 @@ impute_em_rrg_obs_only <- function(impi,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec
     } else {
         print("loading EM params")
         mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
+        
+        pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
+        pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
+        w1 = source(sprintf("%s_rr.w1",w_fn))$value
+        w2 = source(sprintf("%s_rr.w2",w_fn))$value
+        lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
+        lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
+        lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
+        lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+
+        rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
+        names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
+
         if (mix_model_num == 2) {
-            pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
-            pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
-            w1 = source(sprintf("%s_rr.w1",w_fn))$value
-            w2 = source(sprintf("%s_rr.w2",w_fn))$value
-            lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
-            lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
-            lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
-            lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
-
-            rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
-            names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
-
             rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
             prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+        }
 
-        } else {
-            ll = source(sprintf("%s.ll",w_fn))$value
-            pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
-            pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
-            pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
-            w1 = source(sprintf("%s_rrg.w1",w_fn))$value
-            w2 = source(sprintf("%s_rrg.w2",w_fn))$value
-            w3 = source(sprintf("%s_rrg.w3",w_fn))$value
-            lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
-            lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
-            lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
-            lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+        ll = source(sprintf("%s.ll",w_fn))$value
+        pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
+        pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
+        pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
+        w1 = source(sprintf("%s_rrg.w1",w_fn))$value
+        w2 = source(sprintf("%s_rrg.w2",w_fn))$value
+        w3 = source(sprintf("%s_rrg.w3",w_fn))$value
+        lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
+        lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
+        lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
+        lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
 
-            rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
-            names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
+        rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
+        names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
 
+        if (mix_model_num != 2) {
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             lr_prediction2 = x2[!ry,  ] %*% lr_beta2
 
