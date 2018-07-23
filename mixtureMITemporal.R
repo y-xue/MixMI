@@ -264,44 +264,50 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # Train rrg model
         sink(sprintf("%s_rrg_em_params.txt",w_fn))
         
-        # sy = ry
-        # for (i in 1:length(sy)) {
-        #     if (sy[i] == TRUE) {
-        #         ts = pt_df[i,-t][r_v[i,]]
-        #         if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
-        #             sy[i] = FALSE
-        #         }
-        #     }
-        # }
+        # Train with selected records
+        # that have at least one measurement
+        # 
+        sy = ry
+        for (i in 1:length(sy)) {
+            if (sy[i] == TRUE) {
+                ts = pt_df[i,-t][r_v[i,]]
+                # if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
+                if (sum(r_v[i,] == 0)) {
+                    sy[i] = FALSE
+                }
+            }
+        }
 
-        # T = dim(pt_df)[2]
-        # N = sum(sy)
-        # S = y[sy]
-        # Z = x1[sy,]
-        # Yreg = x2[sy,]
-        # Ygp = pt_df[sy,]
+        T = dim(pt_df)[2]
+        N = sum(sy)
+        S = y[sy]
+        Z = x1[sy,]
+        Yreg = x2[sy,]
+        Ygp = pt_df[sy,]
 
-        # xtr_vec_tr = xtr_vec[sy,]
-        # xte_vec_tr = xte_vec[sy]
+        xtr_vec_tr = xtr_vec[sy,]
+        xte_vec_tr = xte_vec[sy]
 
-        # r_v_tr = r_v[sy,]
+        r_v_tr = r_v[sy,]
 
-        # lr_param1 <- norm_fix(y, sy, x1)
-        # lr_param2 <- norm_fix(y, sy, x2)
+        lr_param1 <- norm_fix(y, sy, x1)
+        lr_param2 <- norm_fix(y, sy, x2)
 
-        N = sum(ry)
-        S = y[ry]
-        Z = x1[ry,]
-        Yreg = x2[ry,]
-        Ygp = pt_df[ry,]
+        # Train with all records
+        # 
+        # N = sum(ry)
+        # S = y[ry]
+        # Z = x1[ry,]
+        # Yreg = x2[ry,]
+        # Ygp = pt_df[ry,]
 
-        xtr_vec_tr = xtr_vec[ry,]
-        xte_vec_tr = xte_vec[ry]
+        # xtr_vec_tr = xtr_vec[ry,]
+        # xte_vec_tr = xte_vec[ry]
 
-        r_v_tr = r_v[ry,]
+        # r_v_tr = r_v[ry,]
 
-        lr_param1 <- norm_fix(y, ry, x1)
-        lr_param2 <- norm_fix(y, ry, x2)
+        # lr_param1 <- norm_fix(y, ry, x1)
+        # lr_param2 <- norm_fix(y, ry, x2)
 
         pi1 = mix_model_1_param$pi_1_m[v,t,impi]
         pi2 = mix_model_1_param$pi_2_m[v,t,impi]
@@ -416,8 +422,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         }
         rrg_rescale_rr_prediction = (pi1 * lr_prediction1 + pi2 * lr_prediction2) / (1 - pi3)
 
-        # if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
-        if (rr_param$abs_error < rrg_param$abs_error) {
+        if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
+        # if (rr_param$abs_error < rrg_param$abs_error) {
             mix_model_num = rr_param$mix_model_num
             prediction = rr_prediction
         } else {
