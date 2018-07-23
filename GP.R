@@ -147,11 +147,11 @@ gp_predict_one_rt <- function(l, xtr, ytr, xte, Rinv=NULL) {
 		res$mse = 0
 		res$idx = TRUE
 	}
-	else if (length(ytr) == 2) {
-        res$pred = approx(xtr,ytr,xte,rule=2)$y
-        res$mse = 0
-        res$idx = TRUE
-    }
+	# else if (length(ytr) == 2) {
+ #        res$pred = approx(xtr,ytr,xte,rule=2)$y
+ #        res$mse = 0
+ #        res$idx = TRUE
+ #    }
 	else {
 		res$pred = yhat(l,xte,xtr,ytr,Rinv=Rinv)
 		res$mse = s2(l,sig2(l, ytr, xtr, Rinv=Rinv),xte,xtr,ytr,Rinv=Rinv)
