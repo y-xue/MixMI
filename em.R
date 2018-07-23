@@ -5,23 +5,23 @@ source("util.R")
 source('mixtureMITemporalConfig.R')
 source('GP.R')
 
-L <- function(pi_1, pi_2, pi_3, w1, w2, w3, s, m_reg1, sig_reg1, m_reg2, sig_reg2, m_gp, s2_gp, epsilon=1e-8) {
+L <- function(pi1, pi2, pi3, w1, w2, w3, s, m_reg1, sig_reg1, m_reg2, sig_reg2, m_gp, s2_gp, epsilon=1e-8) {
 	p1 = dnorm(s,m_reg1,sig_reg1)
 	loglik_1 = 0
 	if (w1 == 0) {
-		loglik_1 = log_with_limits(pi_1 * p1, epsilon)
+		loglik_1 = log_with_limits(pi1 * p1, epsilon)
 	}
 	else {
-		loglik_1 = w1 * log_with_limits(pi_1 * p1 / w1, epsilon)
+		loglik_1 = w1 * log_with_limits(pi1 * p1 / w1, epsilon)
 	}
 
 	p2 = dnorm(s,m_reg2,sig_reg2)
 	loglik_2 = 0
 	if (w2 == 0) {
-		loglik_2 = log_with_limits(pi_2 * p2, epsilon)
+		loglik_2 = log_with_limits(pi2 * p2, epsilon)
 	}
 	else {
-		loglik_2 = w2 * log_with_limits(pi_2 * p2 / w2, epsilon)
+		loglik_2 = w2 * log_with_limits(pi2 * p2 / w2, epsilon)
 	}
 
 	if (is.na(s2_gp)) {
@@ -32,10 +32,10 @@ L <- function(pi_1, pi_2, pi_3, w1, w2, w3, s, m_reg1, sig_reg1, m_reg2, sig_reg
 	}
 	loglik_3 = 0
 	if (w3 == 0) {
-		loglik_3 = log_with_limits(pi_3 * p3, epsilon)
+		loglik_3 = log_with_limits(pi3 * p3, epsilon)
 	}
 	else {
-		loglik_3 = w3 * log_with_limits(pi_3 * p3 / w3, epsilon)
+		loglik_3 = w3 * log_with_limits(pi3 * p3 / w3, epsilon)
 	}
 
 	res = loglik_1 + loglik_2 + loglik_3
@@ -43,24 +43,24 @@ L <- function(pi_1, pi_2, pi_3, w1, w2, w3, s, m_reg1, sig_reg1, m_reg2, sig_reg
 	return(res)
 }
 
-L_rr <- function(pi_1, pi_2, w1, w2, s, m1, sig1, m2, sig2, epsilon=1e-8) {
+L_rr <- function(pi1, pi2, w1, w2, s, m1, sig1, m2, sig2, epsilon=1e-8) {
 
 	p1 = dnorm(s,m1,sig1)
 	loglik_1 = 0
 	if (w1 == 0) {
-		loglik_1 = log_with_limits(pi_1 * p1, epsilon)
+		loglik_1 = log_with_limits(pi1 * p1, epsilon)
 	}
 	else {
-		loglik_1 = w1 * log_with_limits(pi_1 * p1 / w1, epsilon)
+		loglik_1 = w1 * log_with_limits(pi1 * p1 / w1, epsilon)
 	}
 
 	p2 = dnorm(s,m2,sig2)
 	loglik_2 = 0
 	if (w2 == 0) {
-		loglik_2 = log_with_limits(pi_2 * p2, epsilon)
+		loglik_2 = log_with_limits(pi2 * p2, epsilon)
 	}
 	else {
-		loglik_2 = w2 * log_with_limits(pi_2 * p2 / w2, epsilon)
+		loglik_2 = w2 * log_with_limits(pi2 * p2 / w2, epsilon)
 	}
 
 	res = loglik_1 + loglik_2
@@ -76,12 +76,12 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 	N <- length(S)
 
-	param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,pi_1,pi_2,pi_3,w1,w2,w3,-Inf,Inf,mix_model_num)
-	names(param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error',mix_model_num)
+	param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
+	names(param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
 
-	print(sprintf("prev pi_1: %s",pi_1))
-	print(sprintf("prev pi_2: %s",pi_2))
-	print(sprintf("prev pi_3: %s",pi_3))
+	print(sprintf("prev pi1: %s",pi1))
+	print(sprintf("prev pi2: %s",pi2))
+	print(sprintf("prev pi3: %s",pi3))
 
 	if (pi3 == 0) {
 		pi3 = 0.005
@@ -97,11 +97,11 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	sig2vec <- rep(0,N)
 
 	Rinv_lst = mclapply(1:N, function(i) Rinverse(l,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-	M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-xstar][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-	sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-xstar][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-	K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-xstar][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+	M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+	sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+	K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
-	loglik = sum(unlist(mclapply(1:N, function(i) L(pi_1,pi_2,pi_3,w1[i],w2[i],w3[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Yreg[i,]%*%lr_beta2,lr_sigma2,M[i],K[i]), mc.cores=num_cores)))
+	loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Yreg[i,]%*%lr_beta2,lr_sigma2,M[i],K[i]), mc.cores=num_cores)))
 	prev_loglik <- loglik + tolerance + 1
 	param$loglik = loglik
 
@@ -110,22 +110,22 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 	print(sprintf("loglik: %s",loglik))
 	print(sprintf("num predictions: %s",length(S)))
-	print(sprintf("abs error: %s",sum(abs(S - (pi_1*(Z%*%lr_beta1)+pi_2*(Yreg%*%lr_beta2)+pi_3*M)))))
+	print(sprintf("abs error: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2)+pi3*M)))))
 	GP_pred_error = sum(abs(S - M))
 	print(sprintf("GP abs error: %s",GP_pred_error))
 
-	while ((abs(loglik-prev_loglik) > tolerance && j < max_iter)) {
+	while ((abs(loglik-prev_loglik) > tolerance && j < em_max_iter)) {
 		print(sprintf("iter: %d",j))
 		# E-step
 		# 0.4s
 		# ptm <- proc.time()
 		for (i in 1:N) {
-			ry = Ygp[i,-xstar][r_v_tr[i,]]
+			ry = Ygp[i,-t][r_v_tr[i,]]
 			
 			if (length(ry) == 0 || length(unique(ry)) == 1) {
 				if (length(ry) == 0 || unique(ry) != S[i]) {
-					preg1 <- pi_1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
-					preg2 <- pi_2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2)
+					preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
+					preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2)
 					pGP = 1e-8
 				} else {
 					preg1 = 1e-8
@@ -133,15 +133,15 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 					pGP = 1-preg1-preg2
 				}
 			} else {
-				preg1 <- pi_1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
-				preg2 <- pi_2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2)
-				pGP <- pi_3 * dnorm(S[i],M[i],sqrt(K[i]))
+				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
+				preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2)
+				pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i]))
 			}
 			
 			if (round(preg1 + preg2 + pGP, 8) == 0) {
-				preg1 = pi_1
-				preg2 = pi_2
-				pGP = pi_3
+				preg1 = pi1
+				preg2 = pi2
+				pGP = pi3
 			}
 
 			w1[i] <-  preg1 / (preg1 + preg2 + pGP)
@@ -177,13 +177,13 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		}
 
 		# M-step
-		pi_1 <- (sum(w1)) / N
-		pi_2 <- (sum(w2)) / N
-		pi_3 <- (sum(w3)) / N
+		pi1 <- (sum(w1)) / N
+		pi2 <- (sum(w2)) / N
+		pi3 <- (sum(w3)) / N
 
-		print(sprintf("pi1: %s",pi_1))
-		print(sprintf("pi2: %s",pi_2))
-		print(sprintf("pi3: %s",pi_3))
+		print(sprintf("pi1: %s",pi1))
+		print(sprintf("pi2: %s",pi2))
+		print(sprintf("pi3: %s",pi3))
 
 		sw = sqrt(w1)
 		swZ = sw * Z
@@ -210,18 +210,18 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		residuals <- swS - swY %*% lr_beta2
 		lr_sigma2 <- sqrt((sum(residuals^2))/sum(w2))
 
-		ll <- Adam_one_obs_only(w3,pi_3,Ygp,S,xte_vec_tr,xtr_vec_tr,Rinv_lst,xstar,r_v_tr,ll,step,gd_precision,gd_miter,j)
+		ll <- Adam_one_obs_only(w3,pi3,Ygp,S,xte_vec_tr,xtr_vec_tr,Rinv_lst,t,r_v_tr,ll,step,gd_precision,gd_miter,j)
 
 		Rinv_lst = mclapply(1:N, function(i) Rinverse(ll,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-		M = unlist(mclapply(1:N,function (i) yhat(ll,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-xstar][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-		sig2vec = unlist(mclapply(1:N, function(i) sig2(ll,Ygp[i,-xstar][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-		K = unlist(mclapply(1:N, function(i) s2(ll,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-xstar][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+		M = unlist(mclapply(1:N,function (i) yhat(ll,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+		sig2vec = unlist(mclapply(1:N, function(i) sig2(ll,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+		K = unlist(mclapply(1:N, function(i) s2(ll,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
 		prev_loglik <- loglik
-		loglik = sum(unlist(mclapply(1:N, function(i) L(pi_1,pi_2,pi_3,w1[i],w2[i],w3[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Yreg[i,]%*%lr_beta2,lr_sigma2,M[i],sqrt(K[i])), mc.cores=num_cores)))
+		loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Yreg[i,]%*%lr_beta2,lr_sigma2,M[i],sqrt(K[i])), mc.cores=num_cores)))
 		print(sprintf("loglik: %s",loglik))
 		
-		pred_error = sum(abs(S - (pi_1*(Z%*%lr_beta1)+pi_2*(Yreg%*%lr_beta2)+pi_3*M)))
+		pred_error = sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2)+pi3*M)))
 		print(sprintf("abs error: %s",pred_error))
 
 		GP_pred_error = sum(abs(S - M))
@@ -245,9 +245,9 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 			param$w1 <- w1
 			param$w2 <- w2
 			param$w3 <- w3
-			param$pi1 <- pi_1
-			param$pi2 <- pi_2
-			param$pi3 <- pi_3
+			param$pi1 <- pi1
+			param$pi2 <- pi2
+			param$pi3 <- pi3
 			param$lr_beta1 <- lr_beta1
 			param$lr_sigma1 <- lr_sigma1
 			param$lr_beta2 <- lr_beta2
@@ -261,21 +261,21 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	return(param)
 }
 
-em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi_1,pi_2,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,em_max_iter,tolerance) {
+em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,em_max_iter,tolerance) {
 	print("em_double_reg")
 
 	epsilon = 1e-8
 
 	N = length(S)
 	# initialization
-	param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi_1,pi_2,w1,w2,-Inf,Inf,2)
+	param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,2)
 	names(param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
 
-	print(sprintf("prev pi_1: %s",pi_1))
-	print(sprintf("prev pi_2: %s",pi_2))
+	print(sprintf("prev pi1: %s",pi1))
+	print(sprintf("prev pi2: %s",pi2))
 
 	# 1s
-	loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi_1,pi_2,w1[i],w2[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Y[i,]%*%lr_beta2,lr_sigma2), mc.cores=num_cores)))
+	loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Y[i,]%*%lr_beta2,lr_sigma2), mc.cores=num_cores)))
 	prev_loglik = loglik + tolerance + 1
 	param$loglik = loglik
 
@@ -283,21 +283,21 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi_1,pi_2,lr_beta1,lr_sigma1,lr_beta2,
 
 	print(sprintf("loglik: %s",loglik))
 	print(sprintf("num predictions: %s",length(S)))
-	print(sprintf("abs error: %s",sum(abs(S - (pi_1*(Z%*%lr_beta1)+pi_2*(Yreg%*%lr_beta2))))))
+	print(sprintf("abs error: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Y%*%lr_beta2))))))
 
-	while ((abs(loglik-prev_loglik) > tolerance && j < max_iter)) {
+	while ((abs(loglik-prev_loglik) > tolerance && j < em_max_iter)) {
 		print(sprintf("iter: %d",j))
 		# E-step
 		# 0.4s
 		# ptm <- proc.time()
 		for (i in 1:N) {
 
-			p1 = pi_1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
-			p2 = pi_2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2)
+			p1 = pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
+			p2 = pi2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2)
 
 			if (round(p1+p2,8) == 0) {
-				p1 = pi_1
-				p2 = pi_2
+				p1 = pi1
+				p2 = pi2
 			}
 
 			w1[i] = p1 / (p1 + p2)
@@ -315,16 +315,16 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi_1,pi_2,lr_beta1,lr_sigma1,lr_beta2,
 		}
 
 		# M-step
-		pi_1 <- (sum(w1)) / N
-		pi_2 <- (sum(w2)) / N
+		pi1 <- (sum(w1)) / N
+		pi2 <- (sum(w2)) / N
 
-		print(sprintf("pi1: %s",pi_1))
-		print(sprintf("pi2: %s",pi_2))
+		print(sprintf("pi1: %s",pi1))
+		print(sprintf("pi2: %s",pi2))
 
-		if (pi_1 == 0 || round(pi_1,8) == 0) {
+		if (pi1 == 0 || round(pi1,8) == 0) {
 			return(param)
 		}
-		if (pi_2 == 0 || round(pi_2,8) == 0) {
+		if (pi2 == 0 || round(pi2,8) == 0) {
 			return(param)
 		}
 
@@ -359,10 +359,10 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi_1,pi_2,lr_beta1,lr_sigma1,lr_beta2,
 
 		prev_loglik <- loglik
 		# print(prev_loglik)
-		# loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi_1,pi_2,w1[i],w2[i],S[i],Z[i,],Y[i,],lr_beta1,lr_sigma1,lr_beta2,lr_sigma2), mc.cores=num_cores)))
-		loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi_1,pi_2,w1[i],w2[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Y[i,]%*%lr_beta2,lr_sigma2), mc.cores=num_cores)))
+		# loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],S[i],Z[i,],Y[i,],lr_beta1,lr_sigma1,lr_beta2,lr_sigma2), mc.cores=num_cores)))
+		loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],S[i],Z[i,]%*%lr_beta1,lr_sigma1,Y[i,]%*%lr_beta2,lr_sigma2), mc.cores=num_cores)))
 		print(sprintf("loglik: %s",loglik))
-		pred_error = sum(abs(S - (pi_1*(Z%*%lr_beta1)+pi_2*(Yreg%*%lr_beta2))))
+		pred_error = sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Y%*%lr_beta2))))
 		print(sprintf("abs error: %s",pred_error))
 
 		if (pred_error < param$abs_error) {
@@ -375,8 +375,8 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi_1,pi_2,lr_beta1,lr_sigma1,lr_beta2,
 			param$loglik <- loglik
 			param$w1 <- w1
 			param$w2 <- w2
-			param$pi1 <- pi_1
-			param$pi2 <- pi_2
+			param$pi1 <- pi1
+			param$pi2 <- pi2
 			param$lr_beta1 <- lr_beta1
 			param$lr_sigma1 <- lr_sigma1
 			param$lr_beta2 <- lr_beta2

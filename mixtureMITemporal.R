@@ -208,16 +208,20 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
                         if (!obs_only) {
                             imp_res <- impute_em_rrg(v,y,ry,x1,x2,pt_df,xtr_vec,xte_vec,t,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
                         } else {
-                            imp_res <- impute_em_rrg_obs_only(v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
+                            imp_res <- impute_em_rrg_obs_only(i,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
                         }
 
-                        pi_1_m[v,t,i] = (imp_res$em_param)$pi1
-                        pi_2_m[v,t,i] = (imp_res$em_param)$pi2
-                        pi_3_m[v,t,i] = (imp_res$em_param)$pi3
+                        mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
+                        mix_model_1_param$pi_2_m[v,t,i] = (imp_res$rrg_em_param)$pi2
+                        mix_model_1_param$pi_3_m[v,t,i] = (imp_res$rrg_em_param)$pi3
+                        mix_model_1_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w1
+                        mix_model_1_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w2
+                        mix_model_1_param$w3_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w3
 
-                        w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$em_param)$w1
-                        w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$em_param)$w2
-                        w3_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$em_param)$w3
+                        mix_model_2_param$pi_1_m[v,t,i] = (imp_res$rr_em_param)$pi1
+                        mix_model_2_param$pi_2_m[v,t,i] = (imp_res$rr_em_param)$pi2
+                        mix_model_2_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rr_em_param)$w1
+                        mix_model_2_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rr_em_param)$w2
 
                         imp_tensor[[t]][[v]][,i] = imp_res$pred
                         
@@ -240,19 +244,24 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
     }
 }
 
-impute_em_rrg_obs_only <- function(v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
+impute_em_rrg_obs_only <- function(impi,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
 {
     print("impute_em_rrg_obs_only")
 
-    res <- list(0,0)
-    names(res) <- c("pred","em_param")
+    res <- list(0,0,0)
+    names(res) <- c("pred","rr_em_param","rrg_em_param")
 
     x1 <- as.matrix(x1)
     x2 <- as.matrix(x2)
 
-    if (!file.exists(sprintf("%s.pi1",w_fn))) {
+    ori_y_te = ori_y[!ry]
+    test_r = !is.na(ori_y_te)
+    Nstar = sum(!ry)
+
+    if (!file.exists(sprintf("%s_pred_error.txt",w_fn))) {
         print("training EM")
         
+        # Train rrg model
         sink(sprintf("%s_rrg_em_params.txt",w_fn))
         
         sy = ry
@@ -280,12 +289,12 @@ impute_em_rrg_obs_only <- function(v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_
         lr_param1 <- norm_fix(y, sy, x1)
         lr_param2 <- norm_fix(y, sy, x2)
 
-        pi1 = mix_model_1_param$pi_1_m[v,t,i]
-        pi2 = mix_model_1_param$pi_2_m[v,t,i]
-        pi3 = mix_model_1_param$pi_3_m[v,t,i]
-        w1 = mix_model_1_param$w1_lst[[i]][[(v-1)*num_time_point+t]]
-        w2 = mix_model_1_param$w2_lst[[i]][[(v-1)*num_time_point+t]]
-        w3 = mix_model_1_param$w3_lst[[i]][[(v-1)*num_time_point+t]]
+        pi1 = mix_model_1_param$pi_1_m[v,t,impi]
+        pi2 = mix_model_1_param$pi_2_m[v,t,impi]
+        pi3 = mix_model_1_param$pi_3_m[v,t,impi]
+        w1 = mix_model_1_param$w1_lst[[impi]][[(v-1)*num_time_point+t]]
+        w2 = mix_model_1_param$w2_lst[[impi]][[(v-1)*num_time_point+t]]
+        w3 = mix_model_1_param$w3_lst[[impi]][[(v-1)*num_time_point+t]]
         if (length(w1) != N) {
             w1 = rep(pi1,N)
             w2 = rep(pi2,N)
@@ -296,6 +305,7 @@ impute_em_rrg_obs_only <- function(v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_
         
         sink()
 
+        # Train rr model
         sink(sprintf("%s_rr_em_params.txt",w_fn))
         
         lr_param1 <- norm_fix(y, ry, x1)
@@ -305,96 +315,68 @@ impute_em_rrg_obs_only <- function(v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_
         Y = x2[ry,]
         N = length(S)
 
-        pi1 = mix_model_2_param$pi_1_m[v,t,i]
-        pi2 = mix_model_2_param$pi_2_m[v,t,i]
-        pi3 = 0
-        w1 = mix_model_2_param$w1_lst[[i]][[(v-1)*num_time_point+t]]
-        w2 = mix_model_2_param$w2_lst[[i]][[(v-1)*num_time_point+t]]
-        w3 = 0
+        pi1 = mix_model_2_param$pi_1_m[v,t,impi]
+        pi2 = mix_model_2_param$pi_2_m[v,t,impi]
+        w1 = mix_model_2_param$w1_lst[[impi]][[(v-1)*num_time_point+t]]
+        w2 = mix_model_2_param$w2_lst[[impi]][[(v-1)*num_time_point+t]]
         if (length(w1) != N) {
             w1 = rep(pi1,N)
             w2 = rep(pi2,N)
-            w3 = rep(pi3,N)
         }
 
-        rr_param = em_double_reg(S,Z,Y,T,xstar,w1,w2,pi_1,pi_2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance)
+        rr_param = em_double_reg(S,Z,Y,T,t,w1,w2,pi1,pi2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance)
         
         sink()
 
-        if (rr_param$abs_error < rrg_param$abs_error) {
-            pi1 = rr_param$pi1
-            pi2 = rr_param$pi2
-            pi3 = 0
-            w1 = rr_param$w1
-            w2 = rr_param$w2
-            w3 = 0
-            lr_beta1 = rr_param$lr_beta1
-            lr_sigma1 = rr_param$lr_sigma1
-            lr_beta2 = rr_param$lr_beta2
-            lr_sigma2 = rr_param$lr_sigma2
-            mix_model_num = rr_param$mix_model_num
-        } else {
-            pi1 = rrg_param$pi1
-            pi2 = rrg_param$pi2
-            pi3 = rrg_param$pi3
-            w1 = rrg_param$w1
-            w2 = rrg_param$w2
-            w3 = rrg_param$w3
-            lr_beta1 = rrg_param$lr_beta1
-            lr_sigma1 = rrg_param$lr_sigma1
-            lr_beta2 = rrg_param$lr_beta2
-            lr_sigma2 = rrg_param$lr_sigma2
-            mix_model_num = rrg_param$mix_model_num
-        }
+        # save rr params
+        rr_pi1 = rr_param$pi1
+        pi2 = rr_param$pi2
+        w1 = rr_param$w1
+        w2 = rr_param$w2
+        lr_beta1 = rr_param$lr_beta1
+        lr_sigma1 = rr_param$lr_sigma1
+        lr_beta2 = rr_param$lr_beta2
+        lr_sigma2 = rr_param$lr_sigma2
+        dump("pi1", sprintf("%s_rr.pi1",w_fn))
+        dump("pi2", sprintf("%s_rr.pi2",w_fn))
+        dump("w1", sprintf("%s_rr.w1",w_fn))
+        dump("w2", sprintf("%s_rr.w2",w_fn))
+        dump("lr_beta1", sprintf("%s_rr.lr_beta1",w_fn))
+        dump("lr_sigma1", sprintf("%s_rr.lr_sigma1",w_fn))
+        dump("lr_beta2", sprintf("%s_rr.lr_beta2",w_fn))
+        dump("lr_sigma2", sprintf("%s_rr.lr_sigma2",w_fn)) 
 
+        rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+        rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+        # rr_prediction = sapply(1:Nstar, function(i) {pi1 * rr_lr_prediction1[i] + pi2 * rr_lr_prediction2[i]})
+        rr_prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+
+        # save rrg params
+        pi1 = rrg_param$pi1
+        pi2 = rrg_param$pi2
+        pi3 = rrg_param$pi3
+        w1 = rrg_param$w1
+        w2 = rrg_param$w2
+        w3 = rrg_param$w3
+        lr_beta1 = rrg_param$lr_beta1
+        lr_sigma1 = rrg_param$lr_sigma1
+        lr_beta2 = rrg_param$lr_beta2
+        lr_sigma2 = rrg_param$lr_sigma2
         ll = rrg_param$ll
-
         dump("ll",sprintf("%s.ll",w_fn))
-        dump("pi1", sprintf("%s.pi1",w_fn))
-        dump("pi2", sprintf("%s.pi2",w_fn))
-        dump("pi3", sprintf("%s.pi3",w_fn))
-        dump("w1", sprintf("%s.w1",w_fn))
-        dump("w2", sprintf("%s.w2",w_fn))
-        dump("w3", sprintf("%s.w3",w_fn))
-        dump("lr_beta1", sprintf("%s.lr_beta1",w_fn))
-        dump("lr_sigma1", sprintf("%s.lr_sigma1",w_fn))
-        dump("lr_beta2", sprintf("%s.lr_beta2",w_fn))
-        dump("lr_sigma2", sprintf("%s.lr_sigma2",w_fn)) 
-        dump("mix_model_num", sprintf("%s.mix_model_num",w_fn)) 
-
-        sink(sprintf("%s.pi.txt",w_fn))
-        print(sprintf("pi1: %s",pi1))
-        print(sprintf("pi2: %s",pi2))
-        print(sprintf("pi3: %s",pi3))
-        sink()
-    } else {
-        print("loading EM params")
-        ll = source(sprintf("%s.ll",w_fn))$value
-        pi1 = source(sprintf("%s.pi1",w_fn))$value
-        pi2 = source(sprintf("%s.pi2",w_fn))$value
-        pi3 = source(sprintf("%s.pi3",w_fn))$value
-        w1 = source(sprintf("%s.w1",w_fn))$value
-        w2 = source(sprintf("%s.w2",w_fn))$value
-        w3 = source(sprintf("%s.w3",w_fn))$value
-        lr_beta1 = source(sprintf("%s.lr_beta1",w_fn))$value
-        lr_sigma1 = source(sprintf("%s.lr_sigma1",w_fn))$value
-        lr_beta2 = source(sprintf("%s.lr_beta2",w_fn))$value
-        lr_sigma2 = source(sprintf("%s.lr_sigma2",w_fn))$value
-        mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
-    }
-
-    lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-    lr_prediction2 = x2[!ry,  ] %*% lr_beta2
-
-    ori_y_te = ori_y[!ry]
-    test_r = !is.na(ori_y_te)
-
-    Nstar = sum(!ry)
-
-    if (mix_model_num == 2) {
-        # RR
-        prediction = sapply(1:Nstar, function(i) {pi_1 * lr_prediction1[i] + pi_2 * lr_prediction2[i]})
-    } else {
+        dump("pi1", sprintf("%s_rrg.pi1",w_fn))
+        dump("pi2", sprintf("%s_rrg.pi2",w_fn))
+        dump("pi3", sprintf("%s_rrg.pi3",w_fn))
+        dump("w1", sprintf("%s_rrg.w1",w_fn))
+        dump("w2", sprintf("%s_rrg.w2",w_fn))
+        dump("w3", sprintf("%s_rrg.w3",w_fn))
+        dump("lr_beta1", sprintf("%s_rrg.lr_beta1",w_fn))
+        dump("lr_sigma1", sprintf("%s_rrg.lr_sigma1",w_fn))
+        dump("lr_beta2", sprintf("%s_rrg.lr_beta2",w_fn))
+        dump("lr_sigma2", sprintf("%s_rrg.lr_sigma2",w_fn)) 
+        
+        lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+        lr_prediction2 = x2[!ry,  ] %*% lr_beta2
         Ystar = pt_df[!ry,]
     
         xtr_vec_star = xtr_vec[!ry,]
@@ -411,40 +393,110 @@ impute_em_rrg_obs_only <- function(v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_
         }
         gp_prediction = sapply(GPprediction_res, function(x) x$pred)
         
-        if (mix_model_num == 1) {
+        if (rrg_param$mix_model_num == 1) {
             # RRG
-            prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
+            rrg_prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
         } else {
             # GP
-            prediction = gp_prediction
+            rrg_prediction = gp_prediction
         }
-    }
+        rrg_rescale_rr_prediction = (pi1 * lr_prediction1 + pi2 * lr_prediction2) / (1 - pi3)
 
-    print(sprintf("num masked: %s", sum(test_r)))
-    print(sprintf("mix_model_num: %s", mix_model_num))
-    sink(sprintf("%s_pred_error.txt",w_fn))
-    print(sprintf("mix_pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
-    print(sprintf("reg1_pred_error: %s", sum(abs(ori_y_te[test_r] - lr_prediction1[test_r]))))
-    print(sprintf("reg2_pred_error: %s", sum(abs(ori_y_te[test_r] - lr_prediction2[test_r]))))
-    if (mix_model_num != 2) {
-        print(sprintf("GP_pred_error: %s", sum(abs(ori_y_te[test_r] - gp_prediction[test_r]))))
+        if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
+            mix_model_num = rr_param$mix_model_num
+            prediction = rr_prediction
+        } else {
+            mix_model_num = rrg_param$mix_model_num
+            prediction = rrg_prediction
+        }
+        dump("mix_model_num", sprintf("%s.mix_model_num",w_fn))
+
+        sink(sprintf("%s_pred_error.txt",w_fn))
+        print(sprintf("num masked: %s", sum(test_r)))
+        print(sprintf("mix_model_num: %s", mix_model_num))
+        print(sprintf("rr_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
+        print(sprintf("rrg_pred_error: %s", sum(abs(ori_y_te[test_r] - rrg_prediction[test_r]))))
+        print(sprintf("rr_reg1_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_lr_prediction1[test_r]))))
+        print(sprintf("rr_reg2_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_lr_prediction2[test_r]))))
+        print(sprintf("rrg_reg1_pred_error: %s", sum(abs(ori_y_te[test_r] - lr_prediction1[test_r]))))
+        print(sprintf("rrg_reg2_pred_error: %s", sum(abs(ori_y_te[test_r] - lr_prediction2[test_r]))))
+        print(sprintf("rrg_rescale_rr_pred_error: %s", sum(abs(ori_y_te[test_r] - rrg_rescale_rr_prediction[test_r]))))
+        if (mix_model_num != 2) {
+            print(sprintf("GP_pred_error: %s", sum(abs(ori_y_te[test_r] - gp_prediction[test_r]))))
+        }
+        sink()
+
+    } else {
+        print("loading EM params")
+        mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
+        if (mix_model_num == 2) {
+            pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
+            pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
+            w1 = source(sprintf("%s_rr.w1",w_fn))$value
+            w2 = source(sprintf("%s_rr.w2",w_fn))$value
+            lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
+            lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
+            lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
+            lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+
+            rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
+            names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
+
+        } else {
+            ll = source(sprintf("%s.ll",w_fn))$value
+            pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
+            pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
+            pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
+            w1 = source(sprintf("%s_rrg.w1",w_fn))$value
+            w2 = source(sprintf("%s_rrg.w2",w_fn))$value
+            w3 = source(sprintf("%s_rrg.w3",w_fn))$value
+            lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
+            lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
+            lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
+            lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+
+            rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
+            names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
+
+            lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+            lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+
+            if (mix_model_num == 2) {
+                # RR
+                # prediction = sapply(1:Nstar, function(i) {pi1 * lr_prediction1[i] + pi2 * lr_prediction2[i]})
+                prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+            } else {
+                Ystar = pt_df[!ry,]
+            
+                xtr_vec_star = xtr_vec[!ry,]
+                xte_vec_star = xte_vec[!ry]
+                r_v_star = r_v[!ry,]
+
+                if (Nstar == 1) {
+                    Ystar = t(as.matrix(Ystar))
+                }
+
+                GPprediction_res = list()
+                for (i in 1:Nstar) {
+                    GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
+                }
+                gp_prediction = sapply(GPprediction_res, function(x) x$pred)
+                
+                if (mix_model_num == 1) {
+                    # RRG
+                    prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
+                } else {
+                    # GP
+                    prediction = gp_prediction
+                }
+            }
+        }
+        
     }
-    sink()
 
     res$pred = as.matrix(prediction)
-    if (mix_model_num == 2) {
-        rrg_param$pi1 = rr_param$pi1
-        rrg_param$pi2 = rr_param$pi2
-        rrg_param$pi3 = 0
-        rrg_param$w1 = rr_param$w1
-        rrg_param$w2 = rr_param$w2
-        rrg_param$w3 = 0
-        rrg_param$lr_beta1 = rr_param$lr_beta1
-        rrg_param$lr_sigma1 = rr_param$lr_sigma1
-        rrg_param$lr_beta2 = rr_param$lr_beta2
-        rrg_param$lr_sigma2 = rr_param$lr_sigma2 
-    }
-    res$em_param = rrg_param
+    res$rr_em_param = rr_param
+    res$rrg_em_param = rrg_param
     return(res)
 }
 
@@ -495,6 +547,8 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
     
     # exclude the "exclude" columns from predictor_matrix
     predictor_matrix_list <- lapply(predictor_matrix_list, function(x) {x[,pmatch(exclude, names(pv_tensor[[1]]))] <- 0; x})
+
+    imp_tensor <- initialize_imp_tensor(pv_tensor,m)
 
     sink(sprintf("%s/em_gd_params.txt",out_cdn))
     print(sprintf("em_max_iter = %s",em_max_iter))
