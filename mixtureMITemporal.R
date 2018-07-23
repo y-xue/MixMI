@@ -264,30 +264,44 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # Train rrg model
         sink(sprintf("%s_rrg_em_params.txt",w_fn))
         
-        sy = ry
-        for (i in 1:length(sy)) {
-            if (sy[i] == TRUE) {
-                ts = pt_df[i,-t][r_v[i,]]
-                if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
-                    sy[i] = FALSE
-                }
-            }
-        }
+        # sy = ry
+        # for (i in 1:length(sy)) {
+        #     if (sy[i] == TRUE) {
+        #         ts = pt_df[i,-t][r_v[i,]]
+        #         if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
+        #             sy[i] = FALSE
+        #         }
+        #     }
+        # }
 
-        T = dim(pt_df)[2]
-        N = sum(sy)
-        S = y[sy]
-        Z = x1[sy,]
-        Yreg = x2[sy,]
-        Ygp = pt_df[sy,]
+        # T = dim(pt_df)[2]
+        # N = sum(sy)
+        # S = y[sy]
+        # Z = x1[sy,]
+        # Yreg = x2[sy,]
+        # Ygp = pt_df[sy,]
 
-        xtr_vec_tr = xtr_vec[sy,]
-        xte_vec_tr = xte_vec[sy]
+        # xtr_vec_tr = xtr_vec[sy,]
+        # xte_vec_tr = xte_vec[sy]
 
-        r_v_tr = r_v[sy,]
+        # r_v_tr = r_v[sy,]
 
-        lr_param1 <- norm_fix(y, sy, x1)
-        lr_param2 <- norm_fix(y, sy, x2)
+        # lr_param1 <- norm_fix(y, sy, x1)
+        # lr_param2 <- norm_fix(y, sy, x2)
+
+        N = sum(ry)
+        S = y[ry]
+        Z = x1[ry,]
+        Yreg = x2[ry,]
+        Ygp = pt_df[ry,]
+
+        xtr_vec_tr = xtr_vec[ry,]
+        xte_vec_tr = xte_vec[ry]
+
+        r_v_tr = r_v[ry,]
+
+        lr_param1 <- norm_fix(y, ry, x1)
+        lr_param2 <- norm_fix(y, ry, x2)
 
         pi1 = mix_model_1_param$pi_1_m[v,t,impi]
         pi2 = mix_model_1_param$pi_2_m[v,t,impi]
@@ -329,7 +343,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         sink()
 
         # save rr params
-        rr_pi1 = rr_param$pi1
+        pi1 = rr_param$pi1
         pi2 = rr_param$pi2
         w1 = rr_param$w1
         w2 = rr_param$w2
