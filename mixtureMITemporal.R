@@ -492,7 +492,7 @@ impute_em_rrg_obs_only <- function(impi,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec
             }
         }
 
-        print(sprintf("pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+        # print(sprintf("pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
         
     }
 
