@@ -328,11 +328,17 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # Train rr model
         sink(sprintf("%s_rr_em_params.txt",w_fn))
         
-        lr_param1 <- norm_fix(y, ry, x1)
-        lr_param2 <- norm_fix(y, ry, x2)
-        S = y[ry]
-        Z = x1[ry,]
-        Y = x2[ry,]
+        # lr_param1 <- norm_fix(y, ry, x1)
+        # lr_param2 <- norm_fix(y, ry, x2)
+        # S = y[ry]
+        # Z = x1[ry,]
+        # Y = x2[ry,]
+        # N = length(S)
+        lr_param1 <- norm_fix(y, sy, x1)
+        lr_param2 <- norm_fix(y, sy, x2)
+        S = y[sy]
+        Z = x1[sy,]
+        Y = x2[sy,]
         N = length(S)
 
         pi1 = mix_model_2_param$pi_1_m[v,t,impi]
@@ -422,10 +428,14 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         }
         rrg_rescale_rr_prediction = (pi1 * lr_prediction1 + pi2 * lr_prediction2) / (1 - pi3)
 
-        if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
-        # if (rr_param$abs_error < rrg_param$abs_error) {
+        # if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
+        if (rr_param$abs_error < rrg_param$abs_error) {
             mix_model_num = rr_param$mix_model_num
-            prediction = rr_prediction
+            if (t == 1) {
+                prediction = rrg_rescale_rr_prediction
+            } else {
+                prediction = rr_prediction
+            }
         } else {
             mix_model_num = rrg_param$mix_model_num
             prediction = rrg_prediction
@@ -506,7 +516,11 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             
             if (mix_model_num == 1) {
                 # RRG
-                prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
+                if (t == 1) {
+                    prediction = (pi1 * lr_prediction1 + pi2 * lr_prediction2) / (1 - pi3)
+                } else {
+                    prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
+                }
             } else {
                 # GP
                 prediction = gp_prediction
