@@ -365,20 +365,38 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,lr_beta1,lr_sigma1,lr_beta2,lr
 		pred_error = sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Y%*%lr_beta2))))
 		print(sprintf("abs error: %s",pred_error))
 
+		# if (pred_error < param$abs_error) {
+		# 	param$abs_error = pred_error
+
+		# 	if (loglik > param$loglik) {
+		# 		param$loglik <- loglik
+		# 		param$w1 <- w1
+		# 		param$w2 <- w2
+		# 		param$pi1 <- pi1
+		# 		param$pi2 <- pi2
+		# 		param$lr_beta1 <- lr_beta1
+		# 		param$lr_sigma1 <- lr_sigma1
+		# 		param$lr_beta2 <- lr_beta2
+		# 		param$lr_sigma2 <- lr_sigma2
+		# 	}
+		# }
+
 		if (pred_error < param$abs_error) {
 			param$abs_error = pred_error
+		} else {
+			break
+		}
 
-			if (loglik > param$loglik) {
-				param$loglik <- loglik
-				param$w1 <- w1
-				param$w2 <- w2
-				param$pi1 <- pi1
-				param$pi2 <- pi2
-				param$lr_beta1 <- lr_beta1
-				param$lr_sigma1 <- lr_sigma1
-				param$lr_beta2 <- lr_beta2
-				param$lr_sigma2 <- lr_sigma2
-			}
+		if (loglik > param$loglik) {
+			param$loglik <- loglik
+			param$w1 <- w1
+			param$w2 <- w2
+			param$pi1 <- pi1
+			param$pi2 <- pi2
+			param$lr_beta1 <- lr_beta1
+			param$lr_sigma1 <- lr_sigma1
+			param$lr_beta2 <- lr_beta2
+			param$lr_sigma2 <- lr_sigma2
 		}
 
 		
