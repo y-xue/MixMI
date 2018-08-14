@@ -491,15 +491,39 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
         names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
 
-        sink(sprintf("%s_train_abs_error.txt",w_fn))
-        print(sprintf("rr train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2))))))
-        print(sprintf("rr train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2))))))
+        sink(sprintf("%s_w_pred_error.txt",w_fn))
+        # print(sprintf("rr train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2))))))
+        # print(sprintf("rr train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2))))))
         
+
+        df = cbind(as.data.frame(as.matrix(Z)), as.data.frame(as.matrix(Yreg)))
+        df["pred1"] = Z%*%lr_beta1
+        df["pred2"] = Yreg%*%lr_beta2
+        
+        df["w"] = w1
+        md1 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
+        df["w"] = w2
+        md2 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
 
         if (mix_model_num == 2) {
             rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
             prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+
+            ndf = cbind(as.data.frame(as.matrix(x1[!ry,  ])), as.data.frame(as.matrix(x2[!ry,  ])))
+            ndf["pred1"] = x1[!ry,  ] %*% lr_beta1
+            ndf["pred2"] = x2[!ry,  ] %*% lr_beta2
+
+            w1pred = predict(md1,newdata=ndf,type="response")
+            w2pred = predict(md2,newdata=ndf,type="response")
+
+            w1 = w1pred / (w1pred + w2pred)
+            w2 = w2pred / (w1pred + w2pred)
+
+            print(sprintf("rr_pred_error with pi: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+            prediction = w1 * rr_lr_prediction1 + w2 * rr_lr_prediction2
+            print(sprintf("rr_pred_error with w: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+            
         }
 
         
@@ -528,11 +552,26 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
         sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
         K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+        K[is.na(K)] = 0
 
-        # dump("K", sprintf("%s.K",w_fn))
-        print(sprintf("rrg train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2)+pi3*M)))))
-        print(sprintf("rrg train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2)+w3*M)))))
-        sink()
+        # # dump("K", sprintf("%s.K",w_fn))
+        # print(sprintf("rrg train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2)+pi3*M)))))
+        # print(sprintf("rrg train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2)+w3*M)))))
+        # sink()
+
+        df = cbind(as.data.frame(as.matrix(Z)), as.data.frame(as.matrix(Yreg)))
+        df["pred1"] = Z%*%lr_beta1
+        df["pred2"] = Yreg%*%lr_beta2
+        df["predgp"] = M
+        df["k"] = sqrt(K)
+        
+        df["w"] = w1
+        md1 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
+        df["w"] = w2
+        md2 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
+        df["w"] = w3
+        md3 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
+
 
         if (mix_model_num != 2) {
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
@@ -553,6 +592,33 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
                 GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
             }
             gp_prediction = sapply(GPprediction_res, function(x) x$pred)
+
+            Rinv_lst = mclapply(1:Nstar, function(i) Rinverse(l,xtr_vec_star[i,][r_v_star[i,]]), mc.cores=num_cores)
+            M = unlist(mclapply(1:Nstar,function (i) yhat(l,xte_vec_star[i],xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+            sig2vec = unlist(mclapply(1:Nstar, function(i) sig2(l,Ystar[i,-t][r_v_star[i,]],xtr_vec_star[i,][r_v_star[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+            K = unlist(mclapply(1:Nstar, function(i) s2(l,sig2vec[i],xte_vec_star[i],xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+            K[is.na(K)] = 0
+
+
+            ndf = cbind(as.data.frame(as.matrix(x1[!ry,  ])), as.data.frame(as.matrix(x2[!ry,  ])))
+            ndf["pred1"] = x1[!ry,  ] %*% lr_beta1
+            ndf["pred2"] = x2[!ry,  ] %*% lr_beta2
+            ndf["predgp"] = M
+            ndf["k"] = sqrt(K)
+
+            w1pred = predict(md1,newdata=ndf,type="response")
+            w2pred = predict(md2,newdata=ndf,type="response")
+            w3pred = predict(md3,newdata=ndf,type="response")
+
+            w1 = w1pred / (w1pred + w2pred + w3pred)
+            w2 = w2pred / (w1pred + w2pred + w3pred)
+            w3 = w3pred / (w1pred + w2pred + w3pred)
+
+            prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * M
+            print(sprintf("rrg_pred_error with pi: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+            prediction = w1 * lr_prediction1 + w2 * lr_prediction2 + w3 * M
+            print(sprintf("rrg_pred_error with w: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+            sink()
             
             if (mix_model_num == 1) {
                 # RRG
