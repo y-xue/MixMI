@@ -459,40 +459,6 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
 
     } else {
         print("loading EM params")
-        mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
-        
-        pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
-        pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
-        w1 = source(sprintf("%s_rr.w1",w_fn))$value
-        w2 = source(sprintf("%s_rr.w2",w_fn))$value
-        lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
-        lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
-        lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
-        lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
-
-        rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
-        names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
-
-        if (mix_model_num == 2) {
-            rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-            rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
-            prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
-        }
-
-        ll = source(sprintf("%s.ll",w_fn))$value
-        pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
-        pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
-        pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
-        w1 = source(sprintf("%s_rrg.w1",w_fn))$value
-        w2 = source(sprintf("%s_rrg.w2",w_fn))$value
-        w3 = source(sprintf("%s_rrg.w3",w_fn))$value
-        lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
-        lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
-        lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
-        lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
-
-        rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
-        names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
 
         sy = ry
         for (i in 1:length(sy)) {
@@ -511,17 +477,62 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         Yreg = x2[sy,]
         Ygp = pt_df[sy,]
 
+        mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
+        
+        pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
+        pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
+        w1 = source(sprintf("%s_rr.w1",w_fn))$value
+        w2 = source(sprintf("%s_rr.w2",w_fn))$value
+        lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
+        lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
+        lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
+        lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+
+        rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
+        names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
+
+        sink(sprintf("%s_train_abs_error.txt",w_fn))
+        print(sprintf("rr train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2))))))
+        print(sprintf("rr train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2))))))
+        
+
+        if (mix_model_num == 2) {
+            rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+            rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+            prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+        }
+
+        
+
+        ll = source(sprintf("%s.ll",w_fn))$value
+        pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
+        pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
+        pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
+        w1 = source(sprintf("%s_rrg.w1",w_fn))$value
+        w2 = source(sprintf("%s_rrg.w2",w_fn))$value
+        w3 = source(sprintf("%s_rrg.w3",w_fn))$value
+        lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
+        lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
+        lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
+        lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+
+        rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
+        names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
+
         xtr_vec_tr = xtr_vec[sy,]
         xte_vec_tr = xte_vec[sy]
 
         r_v_tr = r_v[sy,]
 
         Rinv_lst = mclapply(1:N, function(i) Rinverse(l,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-        # M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+        M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
         sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
         K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
-        dump("K", sprintf("%s.K",w_fn))
+        # dump("K", sprintf("%s.K",w_fn))
+        print(sprintf("rrg train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2)+pi3*M)))))
+        print(sprintf("rrg train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2)+w3*M)))))
+        sink()
 
         if (mix_model_num != 2) {
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
