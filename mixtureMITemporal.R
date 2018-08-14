@@ -233,13 +233,13 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
                 }
             }
 
-            for (t in 1:length(pv_tensor)) {
-                imputed <- pv_tensor[[t]]
-                for (v in visit_col_sequence_list[[t]]) {    
-                    imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-                }
-                write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
-            }
+            # for (t in 1:length(pv_tensor)) {
+            #     imputed <- pv_tensor[[t]]
+            #     for (v in visit_col_sequence_list[[t]]) {    
+            #         imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+            #     }
+            #     write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
+            # }
         }
     }
 }
@@ -494,6 +494,35 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
         names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
 
+        sy = ry
+        for (i in 1:length(sy)) {
+            if (sy[i] == TRUE) {
+                ts = pt_df[i,-t][r_v[i,]]
+                if (sum(r_v[i,]) == 0) {
+                    sy[i] = FALSE
+                }
+            }
+        }
+
+        T = dim(pt_df)[2]
+        N = sum(sy)
+        S = y[sy]
+        Z = x1[sy,]
+        Yreg = x2[sy,]
+        Ygp = pt_df[sy,]
+
+        xtr_vec_tr = xtr_vec[sy,]
+        xte_vec_tr = xte_vec[sy]
+
+        r_v_tr = r_v[sy,]
+
+        Rinv_lst = mclapply(1:N, function(i) Rinverse(l,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
+        # M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+        sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+        K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+
+        dump("K", sprintf("%s.K",w_fn))
+
         if (mix_model_num != 2) {
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             lr_prediction2 = x2[!ry,  ] %*% lr_beta2
@@ -601,14 +630,14 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
         imp_tensor = sampler_rg(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, printFlag, ...)
     }
 
-    for (t in 1:length(pv_tensor)) {
-        for (i in 1:m) {
-            for (v in visit_col_sequence_list[[t]]) {   
-                pv_tensor[[t]][!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-                write.csv(pv_tensor[[t]], file=sprintf("%s/imp_%d_attime_%s.csv",out_cdn,i,t), row.names=FALSE)
-            }
-        }
-    }
+    # for (t in 1:length(pv_tensor)) {
+    #     for (i in 1:m) {
+    #         for (v in visit_col_sequence_list[[t]]) {   
+    #             pv_tensor[[t]][!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+    #             write.csv(pv_tensor[[t]], file=sprintf("%s/imp_%d_attime_%s.csv",out_cdn,i,t), row.names=FALSE)
+    #         }
+    #     }
+    # }
 
     return(pv_tensor)
 }
