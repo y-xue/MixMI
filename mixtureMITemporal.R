@@ -505,7 +505,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         df["w"] = w2
         md2 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
 
-        if (mix_model_num == 2) {
+        # if (mix_model_num == 2) {
             rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
             prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
@@ -524,7 +524,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             prediction = w1 * rr_lr_prediction1 + w2 * rr_lr_prediction2
             print(sprintf("rr_pred_error with w: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
             
-        }
+        # }
 
         
 
@@ -573,7 +573,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         md3 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
 
 
-        if (mix_model_num != 2) {
+        # if (mix_model_num != 2) {
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             lr_prediction2 = x2[!ry,  ] %*% lr_beta2
 
@@ -618,7 +618,6 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             print(sprintf("rrg_pred_error with pi: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
             prediction = w1 * lr_prediction1 + w2 * lr_prediction2 + w3 * M
             print(sprintf("rrg_pred_error with w: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
-            sink()
             
             if (mix_model_num == 1) {
                 # RRG
@@ -631,7 +630,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
                 # GP
                 prediction = gp_prediction
             }
-        }
+        # }
+        sink()
 
         # print(sprintf("pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
         
