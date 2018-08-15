@@ -128,9 +128,12 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 					preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2)
 					pGP = 1e-8
 				} else {
-					preg1 = 1e-8
-					preg2 = 1e-8
-					pGP = 1-preg1-preg2
+					# preg1 = 1e-8
+					# preg2 = 1e-8
+					# pGP = 1-preg1-preg2
+					preg1 = pi1
+					preg2 = pi2
+					pGP = pi3
 				}
 			} else {
 				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1)
