@@ -446,7 +446,7 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		# E-step
 		# 0.4s
 		# ptm <- proc.time()
-		ws = get_w_rr(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2) {
+		ws = get_w_rr(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2)
 		w1 = ws$w1; w2 = ws$w2
 
 		# M-step
