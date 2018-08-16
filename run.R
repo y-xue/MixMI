@@ -3,6 +3,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", obs_only
 	source('mixtureMITemporalConfig.R')
 	source('mixtureMITemporal.R')
 	library(parallel)
+	library(mvtnorm)
 
 	em_max_iter = 30
 	tolerance = 1
