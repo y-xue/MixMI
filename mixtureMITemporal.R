@@ -81,7 +81,7 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
     # 0 for GP in RRG, 1 for RRG, 2 for RR
     mix_model_num = 1
 
-    pi3 = 0.005
+    pi3 = 1/3
     pi1 = (1-pi3)/2
     pi2 = (1-pi3)/2
     
@@ -193,8 +193,7 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
                             GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,][r_v[pt,]],pt_df[pt,-t][r_v[pt,]]),mc.cores=num_cores)
                         }
                         dump("GPmodel_vec",GPmodel_fn)
-                    }
-                    else {
+                    } else {
                         GPmodel_vec = source(GPmodel_fn)$value
                         print("loaded GPmodel_vec")
                     }

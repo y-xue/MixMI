@@ -75,8 +75,8 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 		
 		if (length(ry) == 0 || length(unique(ry)) == 1) {
 			if (length(ry) == 0 || unique(ry) != S[i]) {
-				preg1 <- pi1[i] * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-				preg2 <- pi2[i] * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
+				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
+				preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
 				pGP = 1e-8
 			} else {
 				# preg1 = 1e-8
@@ -87,15 +87,15 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 				pGP = pi3
 			}
 		} else {
-			preg1 <- pi1[i] * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-			preg2 <- pi2[i] * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
-			pGP <- pi3[i] * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(Ygp[i,-t],U3,S3)
+			preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
+			preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
+			pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(Ygp[i,-t],U3,S3)
 		}
 
 		if (round(preg1 + preg2 + pGP, 8) == 0) {
-			preg1 = pi1[i]
-			preg2 = pi2[i]
-			pGP = pi3[i]
+			preg1 = pi1
+			preg2 = pi2
+			pGP = pi3
 		}
 
 		w1[i] <-  preg1 / (preg1 + preg2 + pGP)
@@ -170,14 +170,18 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 	w1 = rep(0,N); w2 = rep(0,N); w3 = rep(0,N)
 	for (i in 1:N) {
 		
-		preg1 <- pi1[i] * dmvnorm(Z[i,],U1,S1)
-		preg2 <- pi2[i] * dmvnorm(Yreg[i,],U2,S2)
-		pGP <- pi3[i] * dmvnorm(Ygp[i,-t],U3,S3)
+		preg1 <- pi1 * dmvnorm(Z[i,],U1,S1)
+		preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
+		pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
+
+		if (is.na(preg1 + preg2 + pGP)) {
+			print(i)
+		}
 
 		if (round(preg1 + preg2 + pGP, 8) == 0) {
-			preg1 = pi1[i]
-			preg2 = pi2[i]
-			pGP = pi3[i]
+			preg1 = pi1
+			preg2 = pi2
+			pGP = pi3
 		}
 
 		w1[i] <-  preg1 / (preg1 + preg2 + pGP)
@@ -272,7 +276,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 	K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
-	loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],S[i],U1,U2,U3,S1,S2,S3,Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
+	loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
 	prev_loglik <- loglik + tolerance + 1
 	param$loglik = loglik
 
@@ -362,7 +366,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 
 		prev_loglik <- loglik
-		loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],S[i],U1,U2,U3,S1,S2,S3,Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
+		loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
 		print(sprintf("loglik: %s",loglik))
 		
 		pred_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Yreg%*%lr_beta2)+ww3*M)))
@@ -434,7 +438,7 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 
 	j = 1
 
-	get_ww_rr(N,Z,Y,pi1,pi2,U1,U2,S1,S2)
+	wws = get_ww_rr(N,Z,Y,pi1,pi2,U1,U2,S1,S2)
 	ww1 = wws$w1; ww2 = wws$w2
 
 	print(sprintf("loglik: %s",loglik))
