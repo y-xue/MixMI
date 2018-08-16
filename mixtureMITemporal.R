@@ -167,6 +167,7 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
                     } else {
                       x2 = pt_df[,-t]
                     }
+                    # x2 = pt_df[,-t]
 
                     xte_vec = prt_m_norm[,t]
                     xtr_vec = prt_m_norm[,-t]

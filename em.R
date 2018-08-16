@@ -225,8 +225,8 @@ get_ww_rr <- function(N,Z,Y,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
 	w1 = rep(0,N); w2 = rep(0,N)
 	for (p in 1:N) {
 
-        p1 = pi1 * dmvnorm(Z[i,],U1,S1)
-        p2 = pi2 * dmvnorm(Y[i,],U2,S2)
+        p1 = pi1 * dmvnorm(Z[p,],U1,S1)
+        p2 = pi2 * dmvnorm(Y[p,],U2,S2)
 
         if (round(p1+p2,8) == 0) {
             p1 = pi_1
