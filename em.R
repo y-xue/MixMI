@@ -139,8 +139,8 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
 	w1 = rep(0,N); w2 = rep(0,N)
 	for (p in 1:N) {
 
-        p1 = pi1 * dnorm(S[p],Z[p,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-        p2 = pi2 * dnorm(S[p],Y[p,]%*%lr_beta2,lr_sigma2) * dmvnorm(Y[i,],U2,S2)
+        p1 = pi1 * dnorm(S[p],Z[p,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[p,],U1,S1)
+        p2 = pi2 * dnorm(S[p],Y[p,]%*%lr_beta2,lr_sigma2) * dmvnorm(Y[p,],U2,S2)
 
         if (round(p1+p2,8) == 0) {
             p1 = pi_1
