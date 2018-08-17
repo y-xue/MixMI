@@ -409,12 +409,12 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         w1 = rrg_param$w1
         w2 = rrg_param$w2
         w3 = rrg_param$w3
-        U1 = rr_param$U1
-        U2 = rr_param$U2
-        U3 = rr_param$U3
-        S1 = rr_param$S1
-        S2 = rr_param$S2
-        S3 = rr_param$S3
+        U1 = rrg_param$U1
+        U2 = rrg_param$U2
+        U3 = rrg_param$U3
+        S1 = rrg_param$S1
+        S2 = rrg_param$S2
+        S3 = rrg_param$S3
         lr_beta1 = rrg_param$lr_beta1
         lr_sigma1 = rrg_param$lr_sigma1
         lr_beta2 = rrg_param$lr_beta2
@@ -427,12 +427,12 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         dump("w1", sprintf("%s_rrg.w1",w_fn))
         dump("w2", sprintf("%s_rrg.w2",w_fn))
         dump("w3", sprintf("%s_rrg.w3",w_fn))
-        dump("U1", sprintf("%s_rr.U1",w_fn))
-        dump("U2", sprintf("%s_rr.U2",w_fn))
-        dump("U3", sprintf("%s_rr.U3",w_fn))
-        dump("S1", sprintf("%s_rr.S1",w_fn))
-        dump("S2", sprintf("%s_rr.S2",w_fn))
-        dump("S3", sprintf("%s_rr.S3",w_fn))
+        dump("U1", sprintf("%s_rrg.U1",w_fn))
+        dump("U2", sprintf("%s_rrg.U2",w_fn))
+        dump("U3", sprintf("%s_rrg.U3",w_fn))
+        dump("S1", sprintf("%s_rrg.S1",w_fn))
+        dump("S2", sprintf("%s_rrg.S2",w_fn))
+        dump("S3", sprintf("%s_rrg.S3",w_fn))
         dump("lr_beta1", sprintf("%s_rrg.lr_beta1",w_fn))
         dump("lr_sigma1", sprintf("%s_rrg.lr_sigma1",w_fn))
         dump("lr_beta2", sprintf("%s_rrg.lr_beta2",w_fn))
@@ -532,8 +532,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
         lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
 
-        rr_param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,mix_model_num)
-        names(rr_param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
+        rr_param = list(pi1,pi2,w1,w2)
+        names(rr_param) = c('pi1','pi2','w1','w2')
 
         # sink(sprintf("%s_w_pred_error.txt",w_fn))
         # print(sprintf("mix_model_num: %s",mix_model_num))
@@ -595,8 +595,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
         lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
 
-        rrg_param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,ll,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
-        names(rrg_param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
+        rrg_param <- list(pi1,pi2,pi3,w1,w2,w3)
+        names(rrg_param) <- c('pi1','pi2','pi3','w1','w2','w3')
 
         # xtr_vec_tr = xtr_vec[sy,]
         # xte_vec_tr = xte_vec[sy]

@@ -260,8 +260,8 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 	N <- length(S)
 
-	param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,pi1,pi2,pi3,w1,w2,w3,-Inf,Inf,mix_model_num)
-	names(param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','loglik','abs_error','mix_model_num')
+	param <- list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,pi1,pi2,pi3,w1,w2,w3,U1,U2,U3,S1,S2,S3,-Inf,Inf,mix_model_num)
+	names(param) <- c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','ll','pi1','pi2','pi3','w1','w2','w3','U1','U2','U3','S1','S2','S3','loglik','abs_error','mix_model_num')
 
 	print(sprintf("prev pi1: %s",pi1))
 	print(sprintf("prev pi2: %s",pi2))
@@ -425,8 +425,8 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 
 	N = length(S)
 	# initialization
-	param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,-Inf,Inf,2)
-	names(param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','loglik','abs_error','mix_model_num')
+	param = list(lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,w1,w2,U1,U2,S1,S2,-Inf,Inf,2)
+	names(param) = c('lr_beta1','lr_sigma1','lr_beta2','lr_sigma2','pi1','pi2','w1','w2','U1','U2','S1','S2','loglik','abs_error','mix_model_num')
 
 	print(sprintf("prev pi1: %s",pi1))
 	print(sprintf("prev pi2: %s",pi2))
