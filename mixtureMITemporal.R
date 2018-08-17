@@ -162,12 +162,12 @@ sampler <- function(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit
 
                     ori_y = ori_tensor[[t]][,v]
 
-                    if (rt) {
-                      x2 = cbind(pt_df[,-t],prt_m_norm[,-1]) # prt_m_norm[,1] are all zero, including which causes singular problem
-                    } else {
-                      x2 = pt_df[,-t]
-                    }
-                    # x2 = pt_df[,-t]
+                    # if (rt) {
+                    #   x2 = cbind(pt_df[,-t],prt_m_norm[,-1]) # prt_m_norm[,1] are all zero, including which causes singular problem
+                    # } else {
+                    #   x2 = pt_df[,-t]
+                    # }
+                    x2 = pt_df[,-t]
 
                     xte_vec = prt_m_norm[,t]
                     xtr_vec = prt_m_norm[,-t]
