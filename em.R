@@ -453,10 +453,10 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		ws = get_w_rr(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2)
 		w1 = ws$w1; w2 = ws$w2
 
-		print(mean(w1))
-		print(mean(w2))
-		print(w1[1:5])
-		print(w2[1:5])
+		# print(mean(w1))
+		# print(mean(w2))
+		# print(w1[1:5])
+		# print(w2[1:5])
 
 		# M-step
 		pi1 <- (sum(w1)) / N
@@ -476,14 +476,14 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		U1 = apply(w1*Z,2,sum)/sum(w1)
 		U2 = apply(w2*Y,2,sum)/sum(w2)
 
-		print(U1)
-		print(U2)
+		# print(U1)
+		# print(U2)
 
 		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
 		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Y[ri,]-U2)%*%t(Y[ri,]-U2)})) / sum(w2)
 
-		print(S1)
-		print(S2)
+		# print(S1)
+		# print(S2)
 
 		# 0.1
 		# ptm <- proc.time()
@@ -554,6 +554,10 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 			param$w2 <- w2
 			param$pi1 <- pi1
 			param$pi2 <- pi2
+			param$U1 <- U1
+			param$U2 <- U2
+			param$S1 <- S1
+			param$S2 <- S2
 			param$lr_beta1 <- lr_beta1
 			param$lr_sigma1 <- lr_sigma1
 			param$lr_beta2 <- lr_beta2
