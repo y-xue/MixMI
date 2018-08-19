@@ -692,14 +692,14 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 
 
-            prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * M
+            prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
             
             if (mix_model_num == 1) {
                 # RRG
                 # if (t == 1) {
                 #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
                 # } else {
-                    prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * M
+                    prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
                 # }
             } else {
                 # GP
