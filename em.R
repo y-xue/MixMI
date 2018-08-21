@@ -383,7 +383,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		residuals <- swS - swY %*% lr_beta2
 		lr_sigma2 <- sqrt((sum(residuals^2))/sum(w2))
 
-		ll <- Adam_one_obs_only(w3,pi3,U3,S3,Ygp,S,xte_vec_tr,xtr_vec_tr,Rinv_lst,t,r_v_tr,ll,step,gd_precision,gd_miter,j)
+		ll <- Adam_one_obs_only(w3,pi3,U3,S3,X,Ygp,S,xte_vec_tr,xtr_vec_tr,Rinv_lst,t,r_v_tr,ll,step,gd_precision,gd_miter,j)
 
 		Rinv_lst = mclapply(1:N, function(i) Rinverse(ll,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
 		M = unlist(mclapply(1:N,function (i) yhat(ll,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))

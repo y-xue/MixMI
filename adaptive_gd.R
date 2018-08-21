@@ -97,7 +97,7 @@ L_dl <- function(wgp,l,yi,s,xte,xtr,Rinv,nug_thres=20) {
 	return(Ldl)
 }
 
-L_GP <- function(wgp,pi_gp,U3,S3,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {		
+L_GP <- function(wgp,pi_gp,U3,S3,X,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {		
 	if (length(Yobs) == 0 || length(unique(Yobs)) == 1) {
 		L2 = pi_gp
 		loglik = wgp * log_with_limits(L2,epsilon)
@@ -107,7 +107,7 @@ L_GP <- function(wgp,pi_gp,U3,S3,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {
 		m <- yhat(l,xte,xtr,Yobs,Rinv=Rinv)
 		k <- s2(l,gp_sigma2,xte,xtr,Yobs,Rinv=Rinv)
 		# loglik <- loglik + wgp[i]*log(pi_gp*dnorm(S[i],m,sqrt(k))/wgp[i])
-		p2 = dnorm(s,m,sqrt(k)) * dmvnorm(Y,U3,S3)
+		p2 = dnorm(s,m,sqrt(k)) * dmvnorm(X,U3,S3)
 		# p2 = round(p2,digits=8)
 		if (wgp == 0) {
 			loglik = log_with_limits(pi_gp*p2,epsilon)
@@ -120,7 +120,7 @@ L_GP <- function(wgp,pi_gp,U3,S3,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {
 	return(loglik)
 }
 
-Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,Y,S,xte_vec,xtr_vec,Rinv_lst,xstar,r_v,l,tao,e,miter,emiter) {
+Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xstar,r_v,l,tao,e,miter,emiter) {
 	N = length(S)
 	beta1 = 0.9
 	beta2 = 0.999
@@ -152,7 +152,7 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,Y,S,xte_vec,xtr_vec,Rinv_lst,xstar
 		# ptm <- proc.time()
 		Rinv_lst = mclapply(1:N, function(x) Rinverse(l,xtr_vec[x,][r_v[x,]]), mc.cores=num_cores)
 
-		loglik = sum(unlist(mclapply(1:N, function(x) L_GP(wgp[x],pi_gp,U3,S3,l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
+		loglik = sum(unlist(mclapply(1:N, function(x) L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
 
 		print(round(loglik,1))
 
