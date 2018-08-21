@@ -33,7 +33,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", obs_only
 tp = 11
 missing_pcnt = 0.2
 data_prefix = "LabViewCase_11tp_1measure"
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rrg_em30",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
 gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 
 run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir)
