@@ -44,8 +44,8 @@ L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, X, s, Z, beta_r
 	return(res)
 }
 
-L_rr <- function(pi1, pi2, w1, w2, U1, U2, S1, S2, s, Z, beta1, sig1, Y, beta2, sig2, epsilon=1e-8) {
-	X = cbind(Z,Y)
+L_rr <- function(pi1, pi2, w1, w2, U1, U2, S1, S2, X, s, Z, beta1, sig1, Y, beta2, sig2, epsilon=1e-8) {
+	
 	p1 = dnorm(s,Z%*%beta1,sig1) * dmvnorm(X,U1,S1)
 	loglik_1 = 0
 	if (w1 == 0) {
@@ -291,7 +291,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
 	# loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
-	X = cbind(X,Yreg)
+	X = cbind(Z,Yreg)
 	for (i in 1:N) {
 		print(i)
 		L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i])
@@ -340,7 +340,6 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		}
 
 		# estimate U, S
-		X = cbind(Z,Yreg)
 		U1 = apply(w1*X,2,sum)/sum(w1)
 		U2 = apply(w2*X,2,sum)/sum(w2)
 		U3 = apply(w3*X,2,sum)/sum(w3)
@@ -394,7 +393,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 
 		prev_loglik <- loglik
-		loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
+		loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
 		print(sprintf("loglik: %s",loglik))
 		
 		pred_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Yreg%*%lr_beta2)+ww3*M)))
@@ -460,7 +459,8 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 	print(sprintf("prev pi2: %s",pi2))
 
 	# 1s
-	loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],U1,U2,S1,S2,S[i],Z[i,],lr_beta1,lr_sigma1,Y[i,],lr_beta2,lr_sigma2), mc.cores=num_cores)))
+	X = cbind(Z,Y)
+	loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],U1,U2,S1,S2,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Y[i,],lr_beta2,lr_sigma2), mc.cores=num_cores)))
 	prev_loglik = loglik + tolerance + 1
 	param$loglik = loglik
 
@@ -501,7 +501,6 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		}
 
 		# estimate U, S
-		X = cbind(Z,Y)
 		U1 = apply(w1*X,2,sum)/sum(w1)
 		U2 = apply(w2*X,2,sum)/sum(w2)
 
@@ -554,7 +553,7 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		prev_loglik <- loglik
 		# print(prev_loglik)
 		# loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],S[i],Z[i,],Y[i,],lr_beta1,lr_sigma1,lr_beta2,lr_sigma2), mc.cores=num_cores)))
-		loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],U1,U2,S1,S2,S[i],Z[i,],lr_beta1,lr_sigma1,Y[i,],lr_beta2,lr_sigma2), mc.cores=num_cores)))
+		loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],U1,U2,S1,S2,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Y[i,],lr_beta2,lr_sigma2), mc.cores=num_cores)))
 		print(sprintf("loglik: %s",loglik))
 		pred_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Y%*%lr_beta2))))
 		print(sprintf("abs error: %s",pred_error))
