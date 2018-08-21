@@ -321,13 +321,20 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             w3 = rep(pi3,N)
         }
 
-        U1 = apply(Z,2,mean)
-        U2 = apply(Yreg,2,mean)
-        U3 = apply(Ygp[,-t],2,mean)
+        X = cbind(Z,Yreg)
+        U1 = apply(X,2,mean)
+        U2 = U1; U3 = U1
 
-        S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        S2 = Reduce('+',lapply(split(Yreg,1:nrow(Yreg)),function(row) {(row-U2)%*%t(row-U2)})) / N
-        S3 = Reduce('+',lapply(split(Ygp[,-t],1:nrow(Ygp)),function(row) {(row-U3)%*%t(row-U3)})) / N
+        S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        S2 = S1; S3 = S1
+
+        # U1 = apply(Z,2,mean)
+        # U2 = apply(Yreg,2,mean)
+        # U3 = apply(Ygp[,-t],2,mean)
+
+        # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        # S2 = Reduce('+',lapply(split(Yreg,1:nrow(Yreg)),function(row) {(row-U2)%*%t(row-U2)})) / N
+        # S3 = Reduce('+',lapply(split(Ygp[,-t],1:nrow(Ygp)),function(row) {(row-U3)%*%t(row-U3)})) / N
 
         rrg_param = em_rrg_obs_only(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
         
@@ -357,10 +364,17 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             w1 = rep(pi1,N)
             w2 = rep(pi2,N)
         }
-        U1 = apply(Z,2,mean)
-        U2 = apply(Yreg,2,mean)
-        S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        S2 = Reduce('+',lapply(split(Y,1:nrow(Y)),function(row) {(row-U2)%*%t(row-U2)})) / N
+
+        X = cbind(Z,Yreg)
+        U1 = apply(X,2,mean)
+        U2 = U1
+
+        S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        S2 = S1
+        # U1 = apply(Z,2,mean)
+        # U2 = apply(Yreg,2,mean)
+        # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        # S2 = Reduce('+',lapply(split(Y,1:nrow(Y)),function(row) {(row-U2)%*%t(row-U2)})) / N
         
 
         rr_param = em_double_reg(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance)
@@ -401,6 +415,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         ww1 = wws$w1; ww2 = wws$w2
 
         rr_prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
+        rr_pi_prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
 
         # save rrg params
         pi1 = rrg_param$pi1
@@ -462,6 +477,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         if (rrg_param$mix_model_num == 1) {
             # RRG
             rrg_prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
+            rrg_pi_prediction = pi1 * lr_prediction1 + pi2 * lr_prediction2 + pi3 * gp_prediction
         } else {
             # GP
             rrg_prediction = gp_prediction
@@ -487,6 +503,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         print(sprintf("mix_model_num: %s", mix_model_num))
         print(sprintf("rr_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
         print(sprintf("rrg_pred_error: %s", sum(abs(ori_y_te[test_r] - rrg_prediction[test_r]))))
+        print(sprintf("rr_pi_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_pi_prediction[test_r]))))
+        print(sprintf("rrg_pi_pred_error: %s", sum(abs(ori_y_te[test_r] - rrg_pi_prediction[test_r]))))
         print(sprintf("rr_reg1_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_lr_prediction1[test_r]))))
         print(sprintf("rr_reg2_pred_error: %s", sum(abs(ori_y_te[test_r] - rr_lr_prediction2[test_r]))))
         print(sprintf("rrg_reg1_pred_error: %s", sum(abs(ori_y_te[test_r] - lr_prediction1[test_r]))))

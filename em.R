@@ -6,7 +6,8 @@ source('mixtureMITemporalConfig.R')
 source('GP.R')
 
 L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, s, Z, beta_reg1, sig_reg1, Y, beta_reg2, sig_reg2, Ygp, m_gp, s2_gp, epsilon=1e-8) {
-	p1 = dnorm(s,Z%*%beta_reg1,sig_reg1) * dmvnorm(Z,U1,S1)
+	X = cbind(Z,Y)
+	p1 = dnorm(s,Z%*%beta_reg1,sig_reg1) * dmvnorm(X,U1,S1)
 	loglik_1 = 0
 	if (w1 == 0) {
 		loglik_1 = log_with_limits(pi1 * p1, epsilon)
@@ -15,7 +16,7 @@ L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, s, Z, beta_reg1
 		loglik_1 = w1 * log_with_limits(pi1 * p1 / w1, epsilon)
 	}
 
-	p2 = dnorm(s,Y%*%beta_reg2,sig_reg2) * dmvnorm(Y,U2,S2)
+	p2 = dnorm(s,Y%*%beta_reg2,sig_reg2) * dmvnorm(X,U2,S2)
 	loglik_2 = 0
 	if (w2 == 0) {
 		loglik_2 = log_with_limits(pi2 * p2, epsilon)
@@ -28,7 +29,7 @@ L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, s, Z, beta_reg1
 		# to be changed
 		p3 = 0
 	} else {
-		p3 = dnorm(s,m_gp,sqrt(s2_gp)) * dmvnorm(Ygp,U3,S3)
+		p3 = dnorm(s,m_gp,sqrt(s2_gp)) * dmvnorm(X,U3,S3)
 	}
 	loglik_3 = 0
 	if (w3 == 0) {
@@ -44,8 +45,8 @@ L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, s, Z, beta_reg1
 }
 
 L_rr <- function(pi1, pi2, w1, w2, U1, U2, S1, S2, s, Z, beta1, sig1, Y, beta2, sig2, epsilon=1e-8) {
-
-	p1 = dnorm(s,Z%*%beta1,sig1) * dmvnorm(Z,U1,S1)
+	X = cbind(Z,Y)
+	p1 = dnorm(s,Z%*%beta1,sig1) * dmvnorm(X,U1,S1)
 	loglik_1 = 0
 	if (w1 == 0) {
 		loglik_1 = log_with_limits(pi1 * p1, epsilon)
@@ -54,7 +55,7 @@ L_rr <- function(pi1, pi2, w1, w2, U1, U2, S1, S2, s, Z, beta1, sig1, Y, beta2, 
 		loglik_1 = w1 * log_with_limits(pi1 * p1 / w1, epsilon)
 	}
 
-	p2 = dnorm(s,Y%*%beta2,sig2) * dmvnorm(Y,U2,S2)
+	p2 = dnorm(s,Y%*%beta2,sig2) * dmvnorm(X,U2,S2)
 	loglik_2 = 0
 	if (w2 == 0) {
 		loglik_2 = log_with_limits(pi2 * p2, epsilon)
@@ -70,13 +71,17 @@ L_rr <- function(pi1, pi2, w1, w2, U1, U2, S1, S2, s, Z, beta1, sig1, Y, beta2, 
 
 get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,M,K,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 	w1 = rep(0,N); w2 = rep(0,N); w3 = rep(0,N)
+	X = cbind(Z,Yreg)
 	for (i in 1:N) {
 		ry = Ygp[i,-t][r_v_tr[i,]]
 		
 		if (length(ry) == 0 || length(unique(ry)) == 1) {
 			if (length(ry) == 0 || unique(ry) != S[i]) {
-				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-				preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
+				# preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
+				# preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
+				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
+				preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
+				
 				pGP = 1e-8
 			} else {
 				# preg1 = 1e-8
@@ -87,9 +92,13 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 				pGP = pi3
 			}
 		} else {
-			preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-			preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
-			pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(Ygp[i,-t],U3,S3)
+			# preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
+			# preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
+			# pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(Ygp[i,-t],U3,S3)
+			preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
+			preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
+			pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(X[i,],U3,S3)
+		
 		}
 
 		if (round(preg1 + preg2 + pGP, 8) == 0) {
@@ -137,10 +146,11 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 
 get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
 	w1 = rep(0,N); w2 = rep(0,N)
+	X = cbind(Z,Y)
 	for (p in 1:N) {
 
-        p1 = pi1 * dnorm(S[p],Z[p,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[p,],U1,S1)
-        p2 = pi2 * dnorm(S[p],Y[p,]%*%lr_beta2,lr_sigma2) * dmvnorm(Y[p,],U2,S2)
+        p1 = pi1 * dnorm(S[p],Z[p,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[p,],U1,S1)
+        p2 = pi2 * dnorm(S[p],Y[p,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[p,],U2,S2)
 
         if (round(p1+p2,8) == 0) {
             p1 = pi1
@@ -168,11 +178,14 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
 
 get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 	w1 = rep(0,N); w2 = rep(0,N); w3 = rep(0,N)
+	X = cbind(Z,Yreg)
 	for (i in 1:N) {
-		
-		preg1 <- pi1 * dmvnorm(Z[i,],U1,S1)
-		preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
-		pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
+		preg1 <- pi1 * dmvnorm(X[i,],U1,S1)
+		preg2 <- pi2 * dmvnorm(X[i,],U2,S2)
+		pGP   <- pi3 * dmvnorm(X[i,],U3,S3)
+		# preg1 <- pi1 * dmvnorm(Z[i,],U1,S1)
+		# preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
+		# pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
 
 		if (is.na(preg1 + preg2 + pGP)) {
 			print(i)
@@ -223,10 +236,11 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 
 get_ww_rr <- function(N,Z,Y,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
 	w1 = rep(0,N); w2 = rep(0,N)
+	X = cbind(Z,Y)
 	for (p in 1:N) {
 
-        p1 = pi1 * dmvnorm(Z[p,],U1,S1)
-        p2 = pi2 * dmvnorm(Y[p,],U2,S2)
+        p1 = pi1 * dmvnorm(X[p,],U1,S1)
+        p2 = pi2 * dmvnorm(X[p,],U2,S2)
 
         if (round(p1+p2,8) == 0) {
             p1 = pi1
@@ -321,13 +335,22 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		}
 
 		# estimate U, S
-		U1 = apply(w1*Z,2,sum)/sum(w1)
-		U2 = apply(w2*Yreg,2,sum)/sum(w2)
-		U3 = apply(w3*Ygp[,-t],2,sum)/sum(w3)
+		X = cbind(Z,Yreg)
+		U1 = apply(w1*X,2,sum)/sum(w1)
+		U2 = apply(w2*X,2,sum)/sum(w2)
+		U3 = apply(w3*X,2,sum)/sum(w3)
 
-		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
-		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Yreg[ri,]-U2)%*%t(Yreg[ri,]-U2)})) / sum(w2)
-		S3 = Reduce('+',lapply(1:N,function(ri) {w3[ri]*(Ygp[ri,-t]-U3)%*%t(Ygp[ri,-t]-U3)})) / sum(w3)
+		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
+		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		S3 = Reduce('+',lapply(1:N,function(ri) {w3[ri]*(X[ri,]-U3)%*%t(X[ri,]-U3)})) / sum(w3)
+
+		# U1 = apply(w1*Z,2,sum)/sum(w1)
+		# U2 = apply(w2*Yreg,2,sum)/sum(w2)
+		# U3 = apply(w3*Ygp[,-t],2,sum)/sum(w3)
+
+		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
+		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Yreg[ri,]-U2)%*%t(Yreg[ri,]-U2)})) / sum(w2)
+		# S3 = Reduce('+',lapply(1:N,function(ri) {w3[ri]*(Ygp[ri,-t]-U3)%*%t(Ygp[ri,-t]-U3)})) / sum(w3)
 
 		# estimate regression parameters
 		sw = sqrt(w1)
@@ -473,17 +496,24 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		}
 
 		# estimate U, S
-		U1 = apply(w1*Z,2,sum)/sum(w1)
-		U2 = apply(w2*Y,2,sum)/sum(w2)
+		X = cbind(Z,Y)
+		U1 = apply(w1*X,2,sum)/sum(w1)
+		U2 = apply(w2*X,2,sum)/sum(w2)
 
-		# print(U1)
-		# print(U2)
+		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
+		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		
+		# U1 = apply(w1*Z,2,sum)/sum(w1)
+		# U2 = apply(w2*Y,2,sum)/sum(w2)
 
-		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
-		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Y[ri,]-U2)%*%t(Y[ri,]-U2)})) / sum(w2)
+		# # print(U1)
+		# # print(U2)
 
-		# print(S1)
-		# print(S2)
+		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
+		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Y[ri,]-U2)%*%t(Y[ri,]-U2)})) / sum(w2)
+
+		# # print(S1)
+		# # print(S2)
 
 		# 0.1
 		# ptm <- proc.time()
