@@ -5,8 +5,8 @@ source("util.R")
 source('mixtureMITemporalConfig.R')
 source('GP.R')
 
-L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, s, Z, beta_reg1, sig_reg1, Y, beta_reg2, sig_reg2, Ygp, m_gp, s2_gp, epsilon=1e-8) {
-	X = cbind(Z,Y)
+L <- function(pi1, pi2, pi3, w1, w2, w3, U1, U2, U3, S1, S2, S3, X, s, Z, beta_reg1, sig_reg1, Y, beta_reg2, sig_reg2, Ygp, m_gp, s2_gp, epsilon=1e-8) {
+	
 	p1 = dnorm(s,Z%*%beta_reg1,sig_reg1) * dmvnorm(X,U1,S1)
 	loglik_1 = 0
 	if (w1 == 0) {
@@ -290,7 +290,12 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 	K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
-	loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
+	# loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
+	X = cbind(X,Yreg)
+	for (i in 1:N) {
+		print(i)
+		L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i])
+	}
 	prev_loglik <- loglik + tolerance + 1
 	param$loglik = loglik
 
