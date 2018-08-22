@@ -370,7 +370,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             w2 = rep(pi2,N)
         }
 
-        X = cbind(Z,Yreg)
+        X = cbind(Z,Y)
         U1 = apply(X,2,mean)
         U2 = U1
 
