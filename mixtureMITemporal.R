@@ -740,7 +740,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
 
     res$pred = as.matrix(prediction)
     res$rr_em_param = rr_param
-    res$rrg_em_param = rrg_param
+    # res$rrg_em_param = rrg_param
     return(res)
 }
 
