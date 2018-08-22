@@ -251,12 +251,15 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
             w1 = 1 - epsilon
         }
 
-        lst = list(w1,w2,w3)
-		names(lst) = c("w1","w2","w3")
+        lst = list(w1,w2)
+		names(lst) = c("w1","w2")
 		lst
 	},  mc.cores=num_cores)
 
 	print(proc.time()-ptm)
+
+	print(w[[1]])
+	print(w[[2]])
 
 	w1 = sapply(w, function(x) {x$w1})
 	w2 = sapply(w, function(x) {x$w2})
