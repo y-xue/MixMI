@@ -229,7 +229,7 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
 	print("get_w_rr")
 	X = cbind(Z,Y)
 	ptm <- proc.time()
-	w = unlist(mclapply(1:N, function(i) {
+	w = mclapply(1:N, function(i) {
 		p1 = pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
         p2 = pi2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
 
@@ -254,7 +254,7 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
         lst = list(w1,w2,w3)
 		names(lst) = c("w1","w2","w3")
 		lst
-	},  mc.cores=num_cores))
+	},  mc.cores=num_cores)
 
 	print(proc.time()-ptm)
 
