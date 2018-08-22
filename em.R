@@ -70,9 +70,8 @@ L_rr <- function(pi1, pi2, w1, w2, U1, U2, S1, S2, X, s, Z, beta1, sig1, Y, beta
 }
 
 get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,M,K,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
-	print("get_w")
 	X = cbind(Z,Yreg)
-	w = unlist(mclapply(1:N, function(i) {
+	w = mclapply(1:N, function(i) {
 		ry = Ygp[i,-t][r_v_tr[i,]]
 		
 		if (length(ry) == 0 || length(unique(ry)) == 1) {
@@ -136,12 +135,12 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 				w1 = w1 - (epsilon-w3)
 			}
 			w3 = epsilon
-
-			lst = list(w1,w2,w3)
-			names(lst) = c("w1","w2","w3")
-			lst
 		}
-	}, mc.cores=num_cores))
+
+		lst = list(w1,w2,w3)
+		names(lst) = c("w1","w2","w3")
+		lst
+	}, mc.cores=num_cores)
 
 	w1 = sapply(w, function(x) {x$w1})
 	w2 = sapply(w, function(x) {x$w2})
@@ -150,85 +149,11 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 	res = list(w1,w2,w3)
 	names(res) = c("w1","w2","w3")
 
-	w1 = rep(0,N); w2 = rep(0,N); w3 = rep(0,N)
-	for (i in 1:N) {
-		ry = Ygp[i,-t][r_v_tr[i,]]
-		
-		if (length(ry) == 0 || length(unique(ry)) == 1) {
-			if (length(ry) == 0 || unique(ry) != S[i]) {
-				# preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-				# preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
-				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
-				preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
-				
-				pGP = 1e-8
-			} else {
-				# preg1 = 1e-8
-				# preg2 = 1e-8
-				# pGP = 1-preg1-preg2
-				preg1 = pi1
-				preg2 = pi2
-				pGP = pi3
-			}
-		} else {
-			# preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-			# preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
-			# pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(Ygp[i,-t],U3,S3)
-			preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
-			preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
-			pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(X[i,],U3,S3)
-		
-		}
-
-		if (round(preg1 + preg2 + pGP, 8) == 0) {
-			preg1 = pi1
-			preg2 = pi2
-			pGP = pi3
-		}
-
-		w1[i] <-  preg1 / (preg1 + preg2 + pGP)
-		w2[i] <- preg2 / (preg1 + preg2 + pGP)
-		w3[i] <- pGP / (preg1 + preg2 + pGP)
-
-		if (w1[i] < epsilon) {
-			if (w2[i] < w3[i]) {
-				w3[i] = w3[i] - (epsilon-w1[i])
-			} else {
-				w2[i] = w2[i] - (epsilon-w1[i])
-			}
-			w1[i] = epsilon
-		}
-
-		if (w2[i] < epsilon) {
-			if (w1[i] < w3[i]) {
-				w3[i] = w3[i] - (epsilon-w2[i])
-			} else {
-				w1[i] = w1[i] - (epsilon-w2[i])
-			}
-			w2[i] = epsilon
-		}
-
-		if (w3[i] < epsilon) {
-			if (w1[i] < w2[i]) {
-				w2[i] = w2[i] - (epsilon-w3[i])
-			} else {
-				w1[i] = w1[i] - (epsilon-w3[i])
-			}
-			w3[i] = epsilon
-		}
-	}
-
-	print(sum(abs(w1-res$w1)))
-	print(sum(abs(w2-res$w2)))
-	print(sum(abs(w3-res$w3)))
-
 	return(res)
 }
 
 get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
-	print("get_w_rr")
 	X = cbind(Z,Y)
-	ptm <- proc.time()
 	w = mclapply(1:N, function(i) {
 		p1 = pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
         p2 = pi2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
@@ -256,54 +181,18 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
 		lst
 	},  mc.cores=num_cores)
 
-	print(proc.time()-ptm)
-
-	print(w[[1]])
-	print(w[[2]])
-
 	w1 = sapply(w, function(x) {x$w1})
 	w2 = sapply(w, function(x) {x$w2})
 
     res = list(w1,w2)
 	names(res) = c("w1","w2")
 
-	ptm <- proc.time()
-	w1 = rep(0,N); w2 = rep(0,N)
-	for (p in 1:N) {
-
-        p1 = pi1 * dnorm(S[p],Z[p,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[p,],U1,S1)
-        p2 = pi2 * dnorm(S[p],Y[p,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[p,],U2,S2)
-
-        if (round(p1+p2,8) == 0) {
-            p1 = pi1
-            p2 = pi2
-        }
-
-        w1[p] = p1 / (p1 + p2)
-        w2[p] = p2 / (p1 + p2)
-
-        if (w1[p] < epsilon) {
-            w1[p] = epsilon
-            w2[p] = 1 - epsilon
-        }
-
-        if (w2[p] < epsilon) {
-            w2[p] = epsilon
-            w1[p] = 1 - epsilon
-        }
-    }
-    print(proc.time()-ptm)
-
-    print(sum(abs(w1-res$w1)))
-	print(sum(abs(w2-res$w2)))
-
 	return(res)
 }
 
 get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
-	w1 = rep(0,N); w2 = rep(0,N); w3 = rep(0,N)
 	X = cbind(Z,Yreg)
-	for (i in 1:N) {
+	w = mclapply(1:N, function(i) {
 		preg1 <- pi1 * dmvnorm(X[i,],U1,S1)
 		preg2 <- pi2 * dmvnorm(X[i,],U2,S2)
 		pGP   <- pi3 * dmvnorm(X[i,],U3,S3)
@@ -311,47 +200,51 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 		# preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
 		# pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
 
-		if (is.na(preg1 + preg2 + pGP)) {
-			print(i)
-		}
-
 		if (round(preg1 + preg2 + pGP, 8) == 0) {
 			preg1 = pi1
 			preg2 = pi2
 			pGP = pi3
 		}
 
-		w1[i] <-  preg1 / (preg1 + preg2 + pGP)
-		w2[i] <- preg2 / (preg1 + preg2 + pGP)
-		w3[i] <- pGP / (preg1 + preg2 + pGP)
+		w1 <-  preg1 / (preg1 + preg2 + pGP)
+		w2 <- preg2 / (preg1 + preg2 + pGP)
+		w3 <- pGP / (preg1 + preg2 + pGP)
 
-		if (w1[i] < epsilon) {
-			if (w2[i] < w3[i]) {
-				w3[i] = w3[i] - (epsilon-w1[i])
+		if (w1 < epsilon) {
+			if (w2 < w3) {
+				w3 = w3 - (epsilon-w1)
 			} else {
-				w2[i] = w2[i] - (epsilon-w1[i])
+				w2 = w2 - (epsilon-w1)
 			}
-			w1[i] = epsilon
+			w1 = epsilon
 		}
 
-		if (w2[i] < epsilon) {
-			if (w1[i] < w3[i]) {
-				w3[i] = w3[i] - (epsilon-w2[i])
+		if (w2 < epsilon) {
+			if (w1 < w3) {
+				w3 = w3 - (epsilon-w2)
 			} else {
-				w1[i] = w1[i] - (epsilon-w2[i])
+				w1 = w1 - (epsilon-w2)
 			}
-			w2[i] = epsilon
+			w2 = epsilon
 		}
 
-		if (w3[i] < epsilon) {
-			if (w1[i] < w2[i]) {
-				w2[i] = w2[i] - (epsilon-w3[i])
+		if (w3 < epsilon) {
+			if (w1 < w2) {
+				w2 = w2 - (epsilon-w3)
 			} else {
-				w1[i] = w1[i] - (epsilon-w3[i])
+				w1 = w1 - (epsilon-w3)
 			}
-			w3[i] = epsilon
+			w3 = epsilon
 		}
-	}
+		lst = list(w1,w2,w3)
+		names(lst) = c("w1","w2","w3")
+		lst
+	},  mc.cores=num_cores)
+
+	w1 = sapply(w, function(x) {x$w1})
+	w2 = sapply(w, function(x) {x$w2})
+	w3 = sapply(w, function(x) {x$w3})
+
 	res = list(w1,w2,w3)
 	names(res) = c("w1","w2","w3")
 
@@ -359,31 +252,39 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 }
 
 get_ww_rr <- function(N,Z,Y,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
-	w1 = rep(0,N); w2 = rep(0,N)
+	
 	X = cbind(Z,Y)
-	for (p in 1:N) {
+	w = mclapply(1:N, function(i) {
 
-        p1 = pi1 * dmvnorm(X[p,],U1,S1)
-        p2 = pi2 * dmvnorm(X[p,],U2,S2)
+        p1 = pi1 * dmvnorm(X[i,],U1,S1)
+        p2 = pi2 * dmvnorm(X[i,],U2,S2)
 
         if (round(p1+p2,8) == 0) {
             p1 = pi1
             p2 = pi2
         }
 
-        w1[p] = p1 / (p1 + p2)
-        w2[p] = p2 / (p1 + p2)
+        w1 = p1 / (p1 + p2)
+        w2 = p2 / (p1 + p2)
 
-        if (w1[p] < epsilon) {
-            w1[p] = epsilon
-            w2[p] = 1 - epsilon
+        if (w1 < epsilon) {
+            w1 = epsilon
+            w2 = 1 - epsilon
         }
 
-        if (w2[p] < epsilon) {
-            w2[p] = epsilon
-            w1[p] = 1 - epsilon
+        if (w2 < epsilon) {
+            w2 = epsilon
+            w1 = 1 - epsilon
         }
-    }
+
+        lst = list(w1,w2)
+		names(lst) = c("w1","w2")
+		lst
+	},  mc.cores=num_cores)
+
+	w1 = sapply(w, function(x) {x$w1})
+	w2 = sapply(w, function(x) {x$w2})
+
     res = list(w1,w2)
 	names(res) = c("w1","w2")
 
