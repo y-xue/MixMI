@@ -26,7 +26,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", obs_only
 	# ori_norm_pv_tensor
 	load(sprintf("../../data/%s_norm.pv_tensor",data_prefix))
 
-	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, ori_tensor=ori_norm_pv_tensor, m = 1, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
+	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, ori_tensor=ori_norm_pv_tensor, m = 3, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
 
 }
 
