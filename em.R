@@ -226,8 +226,46 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 }
 
 get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
-	w1 = rep(0,N); w2 = rep(0,N)
+	print("get_w_rr")
 	X = cbind(Z,Y)
+	ptm <- proc.time()
+	w = unlist(mclapply(1:N, function(i) {
+		p1 = pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
+        p2 = pi2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
+
+        if (round(p1+p2,8) == 0) {
+            p1 = pi1
+            p2 = pi2
+        }
+
+        w1 = p1 / (p1 + p2)
+        w2 = p2 / (p1 + p2)
+
+        if (w1 < epsilon) {
+            w1 = epsilon
+            w2 = 1 - epsilon
+        }
+
+        if (w2 < epsilon) {
+            w2 = epsilon
+            w1 = 1 - epsilon
+        }
+
+        lst = list(w1,w2,w3)
+		names(lst) = c("w1","w2","w3")
+		lst
+	},  mc.cores=num_cores))
+
+	print(proc.time()-ptm)
+
+	w1 = sapply(w, function(x) {x$w1})
+	w2 = sapply(w, function(x) {x$w2})
+
+    res = list(w1,w2)
+	names(res) = c("w1","w2")
+
+	ptm <- proc.time()
+	w1 = rep(0,N); w2 = rep(0,N)
 	for (p in 1:N) {
 
         p1 = pi1 * dnorm(S[p],Z[p,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[p,],U1,S1)
@@ -251,8 +289,10 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
             w1[p] = 1 - epsilon
         }
     }
-    res = list(w1,w2)
-	names(res) = c("w1","w2")
+    print(proc.time()-ptm)
+
+    print(sum(abs(w1-res$w1)))
+	print(sum(abs(w2-res$w2)))
 
 	return(res)
 }
