@@ -72,11 +72,12 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 
 	One = rep(1,n);
 	R = cov_func(beta,X,X);
-	temp = eigen(R,symmetric = TRUE, only.values = TRUE);
-	eig_val = temp$values;
-	condnum = kappa(R,triangular = TRUE,exact=TRUE);
-	max_eigval = eig_val[1];
-	delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*(exp(nug_thres)-1))));
+	delta = 0
+	# temp = eigen(R,symmetric = TRUE, only.values = TRUE);
+	# eig_val = temp$values;
+	# condnum = kappa(R,triangular = TRUE,exact=TRUE);
+	# max_eigval = eig_val[1];
+	# delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*(exp(nug_thres)-1))));
 
 	LO = diag(n);
 	Sig = R + delta*LO;
