@@ -316,11 +316,9 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	# K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
 	# gp_pred_lst = mclapply(1:N, function(i) simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]), mc.cores=num_cores)
-	i = 1
-	print(sprintf("x: %s",xtr_vec_tr[i,][r_v_tr[i,]]))
-	print(sprintf("y: %s",Ygp[i,-t][r_v_tr[i,]]))
-	print(sprintf("xnew: %s",xte_vec_tr[i]))
-	print(simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]))
+	for (i in 1:N) {
+		simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i])
+	}
 	# dump("gp_pred_lst", sprintf("%s.gp_pred_lst",w_fn))
 	M = sapply(gp_pred_lst, function(x) {x$yhat})
 	K = sapply(gp_pred_lst, function(x) {x$mse})
