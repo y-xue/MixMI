@@ -27,18 +27,18 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", obs_only
 	load(sprintf("../../data/%s_norm.pv_tensor",data_prefix))
 
 	# artificial_prt_tensor
-	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked_artificial_time_per_v.prt_tensor",data_prefix,missing_pcnt*100))
+	load(sprintf("../../data/%s_norm_%smispcnt_test_marked_artificial_time_per_v.prt_tensor",data_prefix,missing_pcnt*100))
 
-	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, ori_tensor=ori_norm_pv_tensor, m = 1, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
+	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, artificial_prt_tensor=artificial_prt_tensor, ori_tensor=ori_norm_pv_tensor, m = 1, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
 
 }
 
 tp = 11
 missing_pcnt = 0.2
 data_prefix = "LabViewCase_11tp_1measure"
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rr_valueAndRT_sameXweight_em30",tp,missing_pcnt*100)
-gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
-# out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
-# gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_rrg_equalpi_TregAT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+# out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rr_valueAndRT_sameXweight_em30",tp,missing_pcnt*100)
+# gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
+gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_rrg_equalpi_TregAT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 
 run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir)

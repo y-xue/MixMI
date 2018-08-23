@@ -158,18 +158,9 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
 		p1 = pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
         p2 = pi2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
 
-        # if (round(p1+p2,8) == 0) {
-        #     p1 = pi1
-        #     p2 = pi2
-        # }
-
-        if (i < 10) {
-        	print(dmvnorm(X[i,],U1,S1))
-        	print(dmvnorm(X[i,],U2,S2))
-        	print(p1)
-        	print(p2)
-        	print(p1 / (p1 + p2))
-        	print(p2 / (p1 + p2))
+        if (round(p1+p2,8) == 0) {
+            p1 = pi1
+            p2 = pi2
         }
 
         w1 = p1 / (p1 + p2)
@@ -320,9 +311,13 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	sig2vec <- rep(0,N)
 
 	Rinv_lst = mclapply(1:N, function(i) Rinverse(l,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-	M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-	sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-	K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+	# M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+	# sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+	# K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+
+	gp_pred_lst = mclapply(1:N, function(i) simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]), mc.cores=num_cores)
+	M = sapply(gp_pred_lst, function(x) x$yhat)
+	K = sapply(gp_pred_lst, function(x) x$mse)
 
 	X = cbind(Z,Yreg)
 	loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
@@ -420,10 +415,14 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		ll <- Adam_one_obs_only(w3,pi3,U3,S3,X,Ygp,S,xte_vec_tr,xtr_vec_tr,Rinv_lst,t,r_v_tr,ll,step,gd_precision,gd_miter,j)
 
 		Rinv_lst = mclapply(1:N, function(i) Rinverse(ll,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-		M = unlist(mclapply(1:N,function (i) yhat(ll,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-		sig2vec = unlist(mclapply(1:N, function(i) sig2(ll,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-		K = unlist(mclapply(1:N, function(i) s2(ll,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+		# M = unlist(mclapply(1:N,function (i) yhat(ll,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+		# sig2vec = unlist(mclapply(1:N, function(i) sig2(ll,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
+		# K = unlist(mclapply(1:N, function(i) s2(ll,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
 
+		gp_pred_lst = mclapply(1:N, function(i) simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]), mc.cores=num_cores)
+		M = sapply(gp_pred_lst, function(x) x$yhat)
+		K = sapply(gp_pred_lst, function(x) x$mse)
+		
 		wws = get_ww(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
 		ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 

@@ -86,8 +86,8 @@ L_dl <- function(wgp,l,yi,s,xte,xtr,Rinv,nug_thres=20) {
 
 		f_dl.T <- s2_dl
 
-		g.T <- yhat(l,xte,xtr,yi)
-
+		g.T <- simple_yhat(l, xtr, yi, xte)
+		
 		g_dl.T <- yhat_dl
 
 		Ldl = (wgp*(-1/(2*f.T) * f_dl.T + (s-g.T)*g_dl.T/f.T + f_dl.T*(s-g.T)^2/(2*f.T^2)))
@@ -103,9 +103,12 @@ L_GP <- function(wgp,pi_gp,U3,S3,X,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {
 		loglik = wgp * log_with_limits(L2,epsilon)
 	}
 	else {
-		gp_sigma2 <- sig2(l,Yobs,xtr,Rinv=Rinv)
-		m <- yhat(l,xte,xtr,Yobs,Rinv=Rinv)
-		k <- s2(l,gp_sigma2,xte,xtr,Yobs,Rinv=Rinv)
+		# gp_sigma2 <- sig2(l,Yobs,xtr,Rinv=Rinv)
+		# m <- yhat(l,xte,xtr,Yobs,Rinv=Rinv)
+		# k <- s2(l,gp_sigma2,xte,xtr,Yobs,Rinv=Rinv)
+		gp_pred = simple_GP_pred(l,xtr,ytr,xte)
+		m = gp_pred$yhat
+		k = gp_pred$mse
 		# loglik <- loglik + wgp[i]*log(pi_gp*dnorm(S[i],m,sqrt(k))/wgp[i])
 		p2 = dnorm(s,m,sqrt(k)) * dmvnorm(X,U3,S3)
 		# p2 = round(p2,digits=8)
