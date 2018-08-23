@@ -163,6 +163,15 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
         #     p2 = pi2
         # }
 
+        if (i < 10) {
+        	print(dmvnorm(X[i,],U1,S1))
+        	print(dmvnorm(X[i,],U2,S2))
+        	print(p1)
+        	print(p2)
+        	print(p1 / (p1 + p2))
+        	print(p2 / (p1 + p2))
+        }
+
         w1 = p1 / (p1 + p2)
         w2 = p2 / (p1 + p2)
 
