@@ -106,7 +106,7 @@ L_GP <- function(wgp,pi_gp,U3,S3,X,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {
 		# gp_sigma2 <- sig2(l,Yobs,xtr,Rinv=Rinv)
 		# m <- yhat(l,xte,xtr,Yobs,Rinv=Rinv)
 		# k <- s2(l,gp_sigma2,xte,xtr,Yobs,Rinv=Rinv)
-		gp_pred = simple_GP_pred(l,xtr,ytr,xte)
+		gp_pred = simple_GP_pred(l,xtr,Yobs,xte)
 		m = gp_pred$yhat
 		k = gp_pred$mse
 		# loglik <- loglik + wgp[i]*log(pi_gp*dnorm(S[i],m,sqrt(k))/wgp[i])
