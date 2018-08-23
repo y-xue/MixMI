@@ -158,10 +158,10 @@ get_w_rr <- function(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2
 		p1 = pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
         p2 = pi2 * dnorm(S[i],Y[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
 
-        if (round(p1+p2,8) == 0) {
-            p1 = pi1
-            p2 = pi2
-        }
+        # if (round(p1+p2,8) == 0) {
+        #     p1 = pi1
+        #     p2 = pi2
+        # }
 
         w1 = p1 / (p1 + p2)
         w2 = p2 / (p1 + p2)
