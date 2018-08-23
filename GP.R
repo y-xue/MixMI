@@ -139,8 +139,16 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 	res$mse = mse*(mse>0)
 
 	if (res$mse <= 0) {
-		print("mse <= 0. set to 1e-8")
-		res$mse = 1e-8
+		gpmod = GP_fit(X,Y)
+		gpmod$beta=beta
+		gpmod$sig2=sig2
+		mse = predict.GP(gpmod, xnew)$MSE
+
+		print(sprinf("mse: %s",res$mse))
+		print(sprinf("mse from GP_fit: %s",mse))
+		# print("mse <= 0. set to 1e-8")
+		# res$mse = 1e-8
+		res$mse = mse
 	}
 
 	return(res)
