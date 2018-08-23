@@ -171,7 +171,7 @@ Rinverse <- function(l, gpx, nug_thres=20) {
 
 	L = chol(Sig)
 
-	Rinv <- solve(L, solve(r(L)))
+	Rinv <- solve(L, solve(t(L)))
 
 	return(Rinv)
 }

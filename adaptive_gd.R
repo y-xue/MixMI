@@ -142,10 +142,10 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 		print(i)
 		prev_l <- l
 
-		# g <- sum(unlist(mclapply(1:N, function(x) L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
-		for (x in 1:N) {
-			L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
-		}
+		g <- sum(unlist(mclapply(1:N, function(x) L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
+		# for (x in 1:N) {
+		# 	L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
+		# }
 
 		m = beta1 * prev_m + (1-beta1) * g
 		v = beta2 * prev_v + (1-beta2) * g^2
