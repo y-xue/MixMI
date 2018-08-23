@@ -527,82 +527,82 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
     } else {
         print("loading EM params")
 
-        # sy = ry
-        # for (i in 1:length(sy)) {
-        #     if (sy[i] == TRUE) {
-        #         ts = pt_df[i,-t][r_v[i,]]
-        #         if (sum(r_v[i,]) == 0) {
-        #             sy[i] = FALSE
-        #         }
-        #     }
-        # }
+        # # sy = ry
+        # # for (i in 1:length(sy)) {
+        # #     if (sy[i] == TRUE) {
+        # #         ts = pt_df[i,-t][r_v[i,]]
+        # #         if (sum(r_v[i,]) == 0) {
+        # #             sy[i] = FALSE
+        # #         }
+        # #     }
+        # # }
 
-        # T = dim(pt_df)[2]
-        # N = sum(sy)
-        # S = y[sy]
-        # Z = x1[sy,]
-        # Yreg = x2[sy,]
-        # Ygp = pt_df[sy,]
+        # # T = dim(pt_df)[2]
+        # # N = sum(sy)
+        # # S = y[sy]
+        # # Z = x1[sy,]
+        # # Yreg = x2[sy,]
+        # # Ygp = pt_df[sy,]
 
-        mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
+        # mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
         
-        pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
-        pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
-        w1 = source(sprintf("%s_rr.w1",w_fn))$value
-        w2 = source(sprintf("%s_rr.w2",w_fn))$value
-        U1 = source(sprintf("%s_rr.U1",w_fn))$value
-        U2 = source(sprintf("%s_rr.U2",w_fn))$value
-        S1 = source(sprintf("%s_rr.S1",w_fn))$value
-        S2 = source(sprintf("%s_rr.S2",w_fn))$value
-        lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
-        lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
-        lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
-        lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+        # pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
+        # pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
+        # w1 = source(sprintf("%s_rr.w1",w_fn))$value
+        # w2 = source(sprintf("%s_rr.w2",w_fn))$value
+        # U1 = source(sprintf("%s_rr.U1",w_fn))$value
+        # U2 = source(sprintf("%s_rr.U2",w_fn))$value
+        # S1 = source(sprintf("%s_rr.S1",w_fn))$value
+        # S2 = source(sprintf("%s_rr.S2",w_fn))$value
+        # lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
+        # lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
+        # lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
+        # lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
 
-        rr_param = list(pi1,pi2,w1,w2)
-        names(rr_param) = c('pi1','pi2','w1','w2')
+        # rr_param = list(pi1,pi2,w1,w2)
+        # names(rr_param) = c('pi1','pi2','w1','w2')
 
-        # sink(sprintf("%s_w_pred_error.txt",w_fn))
-        # print(sprintf("mix_model_num: %s",mix_model_num))
-        # # print(sprintf("rr train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2))))))
-        # # print(sprintf("rr train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2))))))
+        # # sink(sprintf("%s_w_pred_error.txt",w_fn))
+        # # print(sprintf("mix_model_num: %s",mix_model_num))
+        # # # print(sprintf("rr train abs error with pi: %s",sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2))))))
+        # # # print(sprintf("rr train abs error with w: %s",sum(abs(S - (w1*(Z%*%lr_beta1)+w2*(Yreg%*%lr_beta2))))))
         
 
-        # df = cbind(as.data.frame(as.matrix(Z)), as.data.frame(as.matrix(Yreg)))
-        # df["pred1"] = Z%*%lr_beta1
-        # df["pred2"] = Yreg%*%lr_beta2
+        # # df = cbind(as.data.frame(as.matrix(Z)), as.data.frame(as.matrix(Yreg)))
+        # # df["pred1"] = Z%*%lr_beta1
+        # # df["pred2"] = Yreg%*%lr_beta2
         
-        # df["w"] = w1
-        # md1 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
-        # df["w"] = w2
-        # md2 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
+        # # df["w"] = w1
+        # # md1 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
+        # # df["w"] = w2
+        # # md2 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
 
-        # ndf = cbind(as.data.frame(as.matrix(x1[!ry,  ])), as.data.frame(as.matrix(x2[!ry,  ])))
-        # ndf["pred1"] = x1[!ry,  ] %*% lr_beta1
-        # ndf["pred2"] = x2[!ry,  ] %*% lr_beta2
+        # # ndf = cbind(as.data.frame(as.matrix(x1[!ry,  ])), as.data.frame(as.matrix(x2[!ry,  ])))
+        # # ndf["pred1"] = x1[!ry,  ] %*% lr_beta1
+        # # ndf["pred2"] = x2[!ry,  ] %*% lr_beta2
 
-        # w1pred = predict(md1,newdata=ndf,type="response")
-        # w2pred = predict(md2,newdata=ndf,type="response")
+        # # w1pred = predict(md1,newdata=ndf,type="response")
+        # # w2pred = predict(md2,newdata=ndf,type="response")
 
-        # w1 = w1pred / (w1pred + w2pred)
-        # w2 = w2pred / (w1pred + w2pred)
+        # # w1 = w1pred / (w1pred + w2pred)
+        # # w2 = w2pred / (w1pred + w2pred)
 
-        # rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-        # rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
-        # rr_prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
-        # print(sprintf("rr_pred_error with pi: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
-        # rr_prediction = w1 * rr_lr_prediction1 + w2 * rr_lr_prediction2
-        # print(sprintf("rr_pred_error with w: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
+        # # rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+        # # rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+        # # rr_prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
+        # # print(sprintf("rr_pred_error with pi: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
+        # # rr_prediction = w1 * rr_lr_prediction1 + w2 * rr_lr_prediction2
+        # # print(sprintf("rr_pred_error with w: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
 
-        if (mix_model_num == 2) {
-            rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-            rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+        # if (mix_model_num == 2) {
+        #     rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+        #     rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
             
-            wws = get_ww_rr(Nstar,x1[!ry,],x2[!ry,],pi1,pi2,U1,U2,S1,S2)
-            ww1 = wws$w1; ww2 = wws$w2
+        #     wws = get_ww_rr(Nstar,x1[!ry,],x2[!ry,],pi1,pi2,U1,U2,S1,S2)
+        #     ww1 = wws$w1; ww2 = wws$w2
 
-            prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
-        }
+        #     prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
+        # }
 
         ll = source(sprintf("%s.ll",w_fn))$value
         pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
@@ -733,7 +733,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
                 prediction = gp_prediction
             }
         }
-        sink()
+        # sink()
 
         # print(sprintf("pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
         

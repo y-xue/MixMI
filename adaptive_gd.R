@@ -158,10 +158,11 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 		# ptm <- proc.time()
 		Rinv_lst = mclapply(1:N, function(x) Rinverse(l,xtr_vec[x,][r_v[x,]]), mc.cores=num_cores)
 
-		loglik = sum(unlist(mclapply(1:N, function(x) L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
-		# for (x in 1:N) {
-		# 	L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
-		# }
+		# loglik = sum(unlist(mclapply(1:N, function(x) L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
+		loglik = 0
+		for (x in 1:N) {
+			loglik = loglik + L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
+		}
 
 		print(round(loglik,1))
 
