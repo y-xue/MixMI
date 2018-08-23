@@ -37,16 +37,16 @@ Rinverse <- function(l, gpx, nug_thres=20) {
 
 	# print(R)
 	
-	temp = eigen(R,symmetric = TRUE, only.values = TRUE);
-	eig_val = temp$values;
+	# temp = eigen(R,symmetric = TRUE, only.values = TRUE);
+	# eig_val = temp$values;
 
-	condnum = kappa(R,triangular = TRUE,exact=TRUE);
-	max_eigval = eig_val[1]
-	delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*
-			(exp(nug_thres)-1))))
+	# condnum = kappa(R,triangular = TRUE,exact=TRUE);
+	# max_eigval = eig_val[1]
+	# delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*
+	# 		(exp(nug_thres)-1))))
 
-	LO = diag(n);
-	R = R + delta*LO;
+	# LO = diag(n);
+	# R = R + delta*LO;
 
 	Rinv <- solve(R)
 
@@ -79,7 +79,6 @@ s2 <- function(l,gpsig2,i,i.bar,Y,Rinv=NULL,nug_thres=20) {
 		return(NA)
 	}
 
-	k0 <- cov_func(l,i,i)
 	ki <- cov_func(l,i,i.bar)
 	
 	if (is.null(Rinv)) {
@@ -92,6 +91,7 @@ s2 <- function(l,gpsig2,i,i.bar,Y,Rinv=NULL,nug_thres=20) {
 
 	# to change
 	if (mse <= 0) {
+		print(mse)
 		print(l)
 		print(i.bar)
 		print(Y)
