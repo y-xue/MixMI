@@ -317,6 +317,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 	# gp_pred_lst = mclapply(1:N, function(i) simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]), mc.cores=num_cores)
 	for (i in 1:N) {
+		print(i)
 		simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i])
 	}
 	# dump("gp_pred_lst", sprintf("%s.gp_pred_lst",w_fn))
