@@ -59,103 +59,104 @@ simple_yhat <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 }
 
 simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
-	if (length(unique(Y)) == 1) {
-		Y[1] = Y[1] + 0.000001
-    }
-	
 	res = list(0,0)
 	names(res) = c("yhat","mse")
-	if (is.matrix(X) == FALSE){
-		X = as.matrix(X)
-	}
-	if (is.matrix(xnew) == FALSE){
-		xnew = as.matrix(xnew)
-	}
-
-	n = nrow(X)
-
-	One = rep(1,n);
-	R = cov_func(beta,X,X);
-	delta = 0
-	# temp = eigen(R,symmetric = TRUE, only.values = TRUE);
-	# eig_val = temp$values;
-	# condnum = kappa(R,triangular = TRUE,exact=TRUE);
-	# max_eigval = eig_val[1];
-	# delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*(exp(nug_thres)-1))));
-
-	LO = diag(n);
-	Sig = R + delta*LO;
-
-	L = chol(Sig);
-
-	Sig_invOne = solve(L,solve(t(L),One));	
-	Sig_invY = solve(L,solve(t(L),Y));	
-
-	mu_hat = solve(t(One)%*%Sig_invOne,t(One)%*%Sig_invY);
-	Sig_invb = solve(L,solve(t(L),(Y-One%*%mu_hat)));
-	sig2 = t(Y-One%*%mu_hat)%*%Sig_invb/n;
-
-	if (delta == 0){
-		Sig_invLp = solve(L,solve(t(L),LO));
+	if (length(Y) == 0 || length(unique(Y)) == 1) {
+		res$yhat = unique(Y)
+		res$mse = NA
 	} else {
-	## Adding in the itterative approach section
-		s_Onei = One;
-		s_Yi = Y;
-		s_Li = LO;
-		Sig_invOne = matrix(0, ncol = 1, nrow = n);
-		Sig_invY = matrix(0, ncol = 1, nrow = n);
-		Sig_invLp = matrix(0, ncol = n, nrow = n)
-		for (it in 1:M)
-		{
-			s_Onei = solve(L,solve(t(L),delta*s_Onei));
-			Sig_invOne = Sig_invOne + s_Onei/delta;
 
-			s_Yi = solve(L,solve(t(L),delta*s_Yi));
-			Sig_invY = Sig_invY + s_Yi/delta;
+		if (is.matrix(X) == FALSE){
+			X = as.matrix(X)
+		}
+		if (is.matrix(xnew) == FALSE){
+			xnew = as.matrix(xnew)
+		}
 
-			s_Li = solve(L,solve(t(L),delta*s_Li));
-			Sig_invLp = Sig_invLp + s_Li/delta;
+		n = nrow(X)
+
+		One = rep(1,n);
+		R = cov_func(beta,X,X);
+		delta = 0
+		# temp = eigen(R,symmetric = TRUE, only.values = TRUE);
+		# eig_val = temp$values;
+		# condnum = kappa(R,triangular = TRUE,exact=TRUE);
+		# max_eigval = eig_val[1];
+		# delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*(exp(nug_thres)-1))));
+
+		LO = diag(n);
+		Sig = R + delta*LO;
+
+		L = chol(Sig);
+
+		Sig_invOne = solve(L,solve(t(L),One));	
+		Sig_invY = solve(L,solve(t(L),Y));	
+
+		mu_hat = solve(t(One)%*%Sig_invOne,t(One)%*%Sig_invY);
+		Sig_invb = solve(L,solve(t(L),(Y-One%*%mu_hat)));
+		sig2 = t(Y-One%*%mu_hat)%*%Sig_invb/n;
+
+		if (delta == 0){
+			Sig_invLp = solve(L,solve(t(L),LO));
+		} else {
+		## Adding in the itterative approach section
+			s_Onei = One;
+			s_Yi = Y;
+			s_Li = LO;
+			Sig_invOne = matrix(0, ncol = 1, nrow = n);
+			Sig_invY = matrix(0, ncol = 1, nrow = n);
+			Sig_invLp = matrix(0, ncol = n, nrow = n)
+			for (it in 1:M)
+			{
+				s_Onei = solve(L,solve(t(L),delta*s_Onei));
+				Sig_invOne = Sig_invOne + s_Onei/delta;
+
+				s_Yi = solve(L,solve(t(L),delta*s_Yi));
+				Sig_invY = Sig_invY + s_Yi/delta;
+
+				s_Li = solve(L,solve(t(L),delta*s_Li));
+				Sig_invLp = Sig_invLp + s_Li/delta;
+			}
+		}
+
+		xn = matrix(xnew,nrow=1);
+		r = exp(-(abs(X-as.matrix(rep(1,n))%*%(xn))^power)%*%(10^beta));
+		res$yhat = (((1-t(r)%*%Sig_invOne)/(t(One)%*%Sig_invOne))%*%t(One)+t(r))%*%Sig_invY;
+
+
+		if (delta == 0) {
+			Sig_invr = solve(L,solve(t(L),r));
+		} else {
+			## if delta != 0, start itterations
+			s_ri = r;
+			Sig_invr = matrix(0, ncol = 1, nrow = n);
+			for (it in 1:M)
+			{
+				s_ri = solve(L,solve(t(L),delta*s_ri));
+				Sig_invr = Sig_invr + s_ri/delta;
+			}
+		}
+		cp_delta_r = (((1-t(r)%*%Sig_invOne)/(t(One)%*%Sig_invOne))%*%t(One)+t(r))%*%Sig_invr;
+
+		cp_delta_Lp = (((1-t(r)%*%Sig_invOne)/(t(One)%*%Sig_invOne))%*%t(One)+t(r))%*%Sig_invLp;
+		mse = sig2*(1-2*cp_delta_r+cp_delta_Lp%*%R%*%t(cp_delta_Lp));
+
+		res$mse = mse*(mse>0)
+
+		print(res$mse)
+		if (res$mse <= 0) {
+			gpmod = GP_fit(X,Y)
+			gpmod$beta=beta
+			gpmod$sig2=sig2
+			mse = predict.GP(gpmod, xnew)$MSE
+
+			print(sprinf("mse: %s",res$mse))
+			print(sprinf("mse from GP_fit: %s",mse))
+			# print("mse <= 0. set to 1e-8")
+			# res$mse = 1e-8
+			res$mse = mse
 		}
 	}
-
-	xn = matrix(xnew,nrow=1);
-	r = exp(-(abs(X-as.matrix(rep(1,n))%*%(xn))^power)%*%(10^beta));
-	res$yhat = (((1-t(r)%*%Sig_invOne)/(t(One)%*%Sig_invOne))%*%t(One)+t(r))%*%Sig_invY;
-
-
-	if (delta == 0) {
-		Sig_invr = solve(L,solve(t(L),r));
-	} else {
-		## if delta != 0, start itterations
-		s_ri = r;
-		Sig_invr = matrix(0, ncol = 1, nrow = n);
-		for (it in 1:M)
-		{
-			s_ri = solve(L,solve(t(L),delta*s_ri));
-			Sig_invr = Sig_invr + s_ri/delta;
-		}
-	}
-	cp_delta_r = (((1-t(r)%*%Sig_invOne)/(t(One)%*%Sig_invOne))%*%t(One)+t(r))%*%Sig_invr;
-
-	cp_delta_Lp = (((1-t(r)%*%Sig_invOne)/(t(One)%*%Sig_invOne))%*%t(One)+t(r))%*%Sig_invLp;
-	mse = sig2*(1-2*cp_delta_r+cp_delta_Lp%*%R%*%t(cp_delta_Lp));
-
-	res$mse = mse*(mse>0)
-
-	print(res$mse)
-	if (res$mse <= 0) {
-		gpmod = GP_fit(X,Y)
-		gpmod$beta=beta
-		gpmod$sig2=sig2
-		mse = predict.GP(gpmod, xnew)$MSE
-
-		print(sprinf("mse: %s",res$mse))
-		print(sprinf("mse from GP_fit: %s",mse))
-		# print("mse <= 0. set to 1e-8")
-		# res$mse = 1e-8
-		res$mse = mse
-	}
-
 	return(res)
 }
 
