@@ -59,6 +59,10 @@ simple_yhat <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 }
 
 simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
+	if (length(unique(Y)) == 1) {
+		Y[1] = Y[1] + 0.000001
+    }
+	
 	res = list(0,0)
 	names(res) = c("yhat","mse")
 	if (is.matrix(X) == FALSE){
