@@ -8,7 +8,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", obs_only
 	em_max_iter = 30
 	tolerance = 1
 	step = 0.02
-	gd_miter = 30
+	gd_miter = 10
 	gd_precision = 0.1
 	exclude = c(tcolname)
 

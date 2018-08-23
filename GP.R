@@ -92,6 +92,12 @@ s2 <- function(l,gpsig2,i,i.bar,Y,Rinv=NULL,nug_thres=20) {
 
 	# to change
 	if (mse <= 0) {
+		print(l)
+		print(i.bar)
+		print(Y)
+		print(i)
+		print(gpsig2)
+		print(Rinv)
 		gpmod = GP_fit(i.bar,Y)
 		gpmod$beta=l
 		gpmod$sig2=gpsig2
