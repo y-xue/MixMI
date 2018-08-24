@@ -739,7 +739,11 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # sink()
 
         # print(sprintf("pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
-        
+        sink(sprintf("%s_loadEM_pred_error.txt",w_fn))
+        print(sprintf("num masked: %s", sum(test_r)))
+        print(sprintf("mix_model_num: %s", mix_model_num))
+        print(sprintf("rrg_pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+        sink()
     }
 
     res$pred = as.matrix(prediction)
