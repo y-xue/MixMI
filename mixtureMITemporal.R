@@ -471,10 +471,11 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             Ystar = t(as.matrix(Ystar))
         }
 
-        GPprediction_res = list()
-        for (i in 1:Nstar) {
-            GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
-        }
+        # GPprediction_res = list()
+        # for (i in 1:Nstar) {
+        #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
+        # }
+        GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
         gp_prediction = sapply(GPprediction_res, function(x) x$pred)
         
         wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
@@ -487,6 +488,7 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         } else {
             # GP
             rrg_prediction = gp_prediction
+            rrg_pi_prediction = gp_prediction
         }
         rrg_rescale_rr_prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
 
@@ -709,10 +711,11 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
                 Ystar = t(as.matrix(Ystar))
             }
 
-            GPprediction_res = list()
-            for (i in 1:Nstar) {
-                GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
-            }
+            # GPprediction_res = list()
+            # for (i in 1:Nstar) {
+            #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
+            # }
+            GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
             gp_prediction = sapply(GPprediction_res, function(x) x$pred)
 
             wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
