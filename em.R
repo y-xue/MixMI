@@ -387,11 +387,12 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		# S3 = Reduce('+',lapply(1:N,function(ri) {w3[ri]*(Ygp[ri,-t]-U3)%*%t(Ygp[ri,-t]-U3)})) / sum(w3)
 
 		# estimate regression parameters
+		ridge <- 0.1 # ridge <- 0.00001
+
 		sw = sqrt(w1)
 		swZ = sw * Z
 		swS = sw * S
 		ztwz <- t(swZ) %*% swZ
-		ridge <- 0.00001
 		pen <- ridge * diag(ztwz)
 		if (length(pen)==1) pen <- matrix(pen)
 		v <- solve(ztwz + diag(pen))
@@ -404,7 +405,6 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		swY = sw2 * Yreg
 		swS = sw2 * S
 		ztwz <- t(swY) %*% swY
-		ridge <- 0.00001
 		pen <- ridge * diag(ztwz)
 		if (length(pen)==1) pen <- matrix(pen)
 		v <- solve(ztwz + diag(pen))

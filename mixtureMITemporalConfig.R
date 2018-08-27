@@ -4,5 +4,5 @@ tcolname = "CHARTTIME"
 # tests = c("Chloride","Potassium","Bicarbonate","Sodium","Hematocrit","Hemoglobin","MCV","Platelet.Count","White.Cell.Count","RDW","Blood.Urea.Nitrogen","Creatinine","Glucose.Level")
 # tcolname = "time"
 
-num_cores = 20
+num_cores = 2
 seed = 8888
