@@ -388,9 +388,9 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 		# estimate regression parameters
 		if (t <= 2 || t >= 10) {
-			ridge <- 10 # ridge <- 0.00001
+			ridge <- 1e-5 # ridge <- 0.00001
 		} else {
-			ridge <- 1e-5
+			ridge <- 10
 		}
 
 		sw = sqrt(w1)
