@@ -481,6 +481,10 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
         ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 
+        dump("ww1", sprintf("%s_rrg.ww1",w_fn))
+        dump("ww2", sprintf("%s_rrg.ww2",w_fn))
+        dump("ww3", sprintf("%s_rrg.ww3",w_fn))
+
         if (rrg_param$mix_model_num == 1) {
             # RRG
             rrg_prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
@@ -721,6 +725,9 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
             wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
             ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 
+            dump("ww1", sprintf("%s_rrg.ww1",w_fn))
+            dump("ww2", sprintf("%s_rrg.ww2",w_fn))
+            dump("ww3", sprintf("%s_rrg.ww3",w_fn))
 
             prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
             
