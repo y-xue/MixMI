@@ -248,6 +248,58 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 	res = list(w1,w2,w3)
 	names(res) = c("w1","w2","w3")
 
+	# tw1 = rep(0,N)
+	# tw2=tw1; tw3=tw1
+	# for (i in 1:N) {
+	# 	preg1 <- pi1 * dmvnorm(X[i,],U1,S1)
+	# 	preg2 <- pi2 * dmvnorm(X[i,],U2,S2)
+	# 	pGP   <- pi3 * dmvnorm(X[i,],U3,S3)
+	# 	# preg1 <- pi1 * dmvnorm(Z[i,],U1,S1)
+	# 	# preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
+	# 	# pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
+
+	# 	if (round(preg1 + preg2 + pGP, 8) == 0) {
+	# 		preg1 = pi1
+	# 		preg2 = pi2
+	# 		pGP = pi3
+	# 	}
+
+	# 	tw1[i] <-  preg1 / (preg1 + preg2 + pGP)
+	# 	tw2[i] <- preg2 / (preg1 + preg2 + pGP)
+	# 	tw3[i] <- pGP / (preg1 + preg2 + pGP)
+
+	# 	if (tw1[i] < epsilon) {
+	# 		if (tw2[i] < tw3[i]) {
+	# 			tw3[i] = tw3[i] - (epsilon-tw1[i])
+	# 		} else {
+	# 			tw2[i] = tw2[i] - (epsilon-tw1[i])
+	# 		}
+	# 		tw1[i] = epsilon
+	# 	}
+
+	# 	if (tw2[i] < epsilon) {
+	# 		if (tw1[i] < tw3[i]) {
+	# 			tw3[i] = tw3[i] - (epsilon-tw2[i])
+	# 		} else {
+	# 			tw1[i] = tw1[i] - (epsilon-tw2[i])
+	# 		}
+	# 		tw2[i] = epsilon
+	# 	}
+
+	# 	if (tw3[i] < epsilon) {
+	# 		if (tw1[i] < tw2[i]) {
+	# 			tw2[i] = tw2[i] - (epsilon-tw3[i])
+	# 		} else {
+	# 			tw1[i] = tw1[i] - (epsilon-tw3[i])
+	# 		}
+	# 		tw3[i] = epsilon
+	# 	}
+	# }
+
+	# print(sum(w1-tw1))
+	# print(sum(w2-tw2))
+	# print(sum(w3-tw3))
+
 	return(res)
 }
 
