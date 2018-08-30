@@ -123,7 +123,7 @@ L_GP <- function(wgp,pi_gp,U3,S3,X,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {
 	return(loglik)
 }
 
-simple_L <- function(wgp,pi_gp,l,X,s,xtr,ytr,xte,epsilon=1e-8) {
+simple_L <- function(wgp,pi_gp,l,X,U3,S3,s,xtr,ytr,xte,epsilon=1e-8) {
 	gp_pred = simple_GP_pred(l,xtr,ytr,xte)
 	m = gp_pred$yhat
 	k = gp_pred$mse
@@ -140,12 +140,12 @@ simple_L <- function(wgp,pi_gp,l,X,s,xtr,ytr,xte,epsilon=1e-8) {
 	return(loglik)	
 }
 
-dff <- function(wgp,pi_gp,l,X,s,xtr,ytr,xte,epsilon=1e-8) {
+dff <- function(wgp,pi_gp,l,X,U3,S3,s,xtr,ytr,xte,epsilon=1e-8) {
 	Rinv = solve(cov_func(l,xtr,xtr))
 	gx = L_dl(wgp,l,ytr,s,xte,xtr,Rinv)
 
-	gx0 = simple_L(wgp,pi_gp,l+1e-4,X,s,xtr,ytr,xte)
-	gx1 = simple_L(wgp,pi_gp,l-1e-4,X,s,xtr,ytr,xte)
+	gx0 = simple_L(wgp,pi_gp,l+1e-4,X,U3,S3,s,xtr,ytr,xte)
+	gx1 = simple_L(wgp,pi_gp,l-1e-4,X,U3,S3,s,xtr,ytr,xte)
 
 	rgx = (gx0 - gx1)/(2*1e-4)
 
@@ -179,8 +179,8 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 			Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
 			gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
 			
-			gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-			gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
+			gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
+			gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
 
 			rgx = (gx0 - gx1)/(2*1e-4)
 			
@@ -193,8 +193,8 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 		lst2 = sapply(1:N, function(x) {
 			Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
 			gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
-			gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
-			gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
+			gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
+			gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
 
 			rgx = (gx0 - gx1)/(2*1e-4)
 			
@@ -202,11 +202,11 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 			diff
 		})
 
-		lst3 = sapply(1:N, function(x) dff(wgp[x],pi_gp,prev_l,X,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x]))
+		lst3 = sapply(1:N, function(x) dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x]))
 
 		lst4 = rep(0,N)
 		for (x in 1:N) {
-			lst4[x] = dff(wgp[x],pi_gp,prev_l,X,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
+			lst4[x] = dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
 		}
 
 		lst5 = rep(0,N)
@@ -218,8 +218,8 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 				Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
 				gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
 				
-				gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-				gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
+				gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
+				gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
 
 				rgx = (gx0 - gx1)/(2*1e-4)
 			
