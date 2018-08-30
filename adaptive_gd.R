@@ -190,54 +190,55 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 		},mc.cores=20))
 
 
-		lst2 = sapply(1:N, function(x) {
-			Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
-			gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
-			gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
-			gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
+		# lst2 = sapply(1:N, function(x) {
+		# 	Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
+		# 	gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
+		# 	gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
+		# 	gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
 
-			rgx = (gx0 - gx1)/(2*1e-4)
+		# 	rgx = (gx0 - gx1)/(2*1e-4)
 			
-			diff = gx-rgx
-			diff
-		})
+		# 	diff = gx-rgx
+		# 	diff
+		# })
 
-		lst3 = sapply(1:N, function(x) dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x]))
+		# lst3 = sapply(1:N, function(x) dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x]))
 
-		lst4 = rep(0,N)
-		for (x in 1:N) {
-			lst4[x] = dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
-		}
+		# lst4 = rep(0,N)
+		# for (x in 1:N) {
+		# 	lst4[x] = dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
+		# }
 
-		lst5 = rep(0,N)
-		for (x in 1:5) {
+		# lst5 = rep(0,N)
+		# for (x in 1:5) {
 			
-			y = Y[x,-xstar][r_v[x,]]
+		# 	y = Y[x,-xstar][r_v[x,]]
 			
-			if (length(y) >= 3 && length(unique(y)) != 1) {
-				Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
-				gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
+		# 	if (length(y) >= 3 && length(unique(y)) != 1) {
+		# 		Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
+		# 		gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
 				
-				gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-				gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
+		# 		gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
+		# 		gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
 
-				rgx = (gx0 - gx1)/(2*1e-4)
+		# 		rgx = (gx0 - gx1)/(2*1e-4)
 			
-			}
-			diff = gx-rgx
-			lst5[x] = diff
-		}
+		# 	}
+		# 	diff = gx-rgx
+		# 	lst5[x] = diff
+		# }
 
-		print(lst5[1:5])
-		print(lst4[1:5])
-		print(lst3[1:5])
-		print(lst2[1:5])
+		# print(lst5[1:5])
+		# print(lst4[1:5])
+		# print(lst3[1:5])
+		# print(lst2[1:5])
 		print(lst1[1:5])
+		print(sum(lst1>1e-4))
 
-		print(sum(lst5-lst4))
-		print(sum(lst5-lst3))
-		print(sum(lst5-lst2))
-		print(sum(lst5-lst1))
+		# print(sum(lst5-lst4))
+		# print(sum(lst5-lst3))
+		# print(sum(lst5-lst2))
+		# print(sum(lst5-lst1))
 
 		# for (x in 1:N) {
 		# 	L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
