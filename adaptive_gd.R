@@ -233,6 +233,7 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 		# print(lst3[1:5])
 		# print(lst2[1:5])
 		print(lst1[1:5])
+		lst1 = lst1[!is.na(lst1)]
 		print(sum(lst1>1e-4))
 
 		# print(sum(lst5-lst4))
