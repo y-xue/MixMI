@@ -595,7 +595,8 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		U2 = apply(w2*X,2,sum)/sum(w2)
 
 		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
-		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		S2 = S1
 		
 		# U1 = apply(w1*Z,2,sum)/sum(w1)
 		# U2 = apply(w2*Y,2,sum)/sum(w2)

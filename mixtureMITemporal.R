@@ -185,30 +185,30 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                     dir.create(w_dir,recursive=TRUE)
                     w_fn = sprintf("%s/val%s_tp%s",w_dir,v,t)
 
-                    if (gpmodel_dir == "") {
-                        gpmodel_dir = sprintf("%s/GP_models",out_cdn)
-                        dir.create(gpmodel_dir,recursive=TRUE)
-                    }
+                    # if (gpmodel_dir == "") {
+                    #     gpmodel_dir = sprintf("%s/GP_models",out_cdn)
+                    #     dir.create(gpmodel_dir,recursive=TRUE)
+                    # }
 
-                    GPmodel_fn = sprintf("%s/val%s_tp%s",gpmodel_dir,v,t)
-                    if (!file.exists(GPmodel_fn)) {
-                        print("fitting GPmodel")
-                        if (!obs_only) {
-                            GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,],pt_df[pt,-t],pt),mc.cores=num_cores)
-                        } else {
-                            GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,][r_v[pt,]],pt_df[pt,-t][r_v[pt,]]),mc.cores=num_cores)
-                        }
-                        dump("GPmodel_vec",GPmodel_fn)
-                    } else {
-                        GPmodel_vec = source(GPmodel_fn)$value
-                        print("loaded GPmodel_vec")
-                    }
+                    # GPmodel_fn = sprintf("%s/val%s_tp%s",gpmodel_dir,v,t)
+                    # if (!file.exists(GPmodel_fn)) {
+                    #     print("fitting GPmodel")
+                    #     if (!obs_only) {
+                    #         GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,],pt_df[pt,-t],pt),mc.cores=num_cores)
+                    #     } else {
+                    #         GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,][r_v[pt,]],pt_df[pt,-t][r_v[pt,]]),mc.cores=num_cores)
+                    #     }
+                    #     dump("GPmodel_vec",GPmodel_fn)
+                    # } else {
+                    #     GPmodel_vec = source(GPmodel_fn)$value
+                    #     print("loaded GPmodel_vec")
+                    # }
 
-                    lvec = sapply(GPmodel_vec, function(x) { if (is.list(x)) {x$beta} else {NA}})
-                    lvec = lvec[!is.na(lvec)]
-                    l = median(lvec)
-                    print(l)
-                    # l = 0
+                    # lvec = sapply(GPmodel_vec, function(x) { if (is.list(x)) {x$beta} else {NA}})
+                    # lvec = lvec[!is.na(lvec)]
+                    # l = median(lvec)
+                    # print(l)
+                    l = 0
 
                     if (sum(!ry) > 0) {
                         if (!obs_only) {
@@ -217,12 +217,12 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                             imp_res <- impute_em_rrg_obs_only(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
                         }
 
-                        mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
-                        mix_model_1_param$pi_2_m[v,t,i] = (imp_res$rrg_em_param)$pi2
-                        mix_model_1_param$pi_3_m[v,t,i] = (imp_res$rrg_em_param)$pi3
-                        mix_model_1_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w1
-                        mix_model_1_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w2
-                        mix_model_1_param$w3_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w3
+                        # mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
+                        # mix_model_1_param$pi_2_m[v,t,i] = (imp_res$rrg_em_param)$pi2
+                        # mix_model_1_param$pi_3_m[v,t,i] = (imp_res$rrg_em_param)$pi3
+                        # mix_model_1_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w1
+                        # mix_model_1_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w2
+                        # mix_model_1_param$w3_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w3
 
                         mix_model_2_param$pi_1_m[v,t,i] = (imp_res$rr_em_param)$pi1
                         mix_model_2_param$pi_2_m[v,t,i] = (imp_res$rr_em_param)$pi2
@@ -275,8 +275,8 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         for (i in 1:length(sy)) {
             if (sy[i] == TRUE) {
                 ts = pt_df[i,-t][r_v[i,]]
-                if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
-                # if (sum(r_v[i,]) == 0) {
+                # if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
+                if (sum(r_v[i,]) == 0) {
                     sy[i] = FALSE
                 }
             }
@@ -298,53 +298,53 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # lr_param1 <- norm_fix(y, ry, x1)
         # lr_param2 <- norm_fix(y, ry, x2)
 
-        # Train rrg model
-        sink(sprintf("%s_rrg_em_params.txt",w_fn))
+        # # Train rrg model
+        # sink(sprintf("%s_rrg_em_params.txt",w_fn))
 
-        lr_param1 <- norm_fix(y, sy, x1)
-        lr_param2 <- norm_fix(y, sy, x2)
-        T = dim(pt_df)[2]
-        N = sum(sy)
-        S = y[sy]
-        Z = x1[sy,]
-        Yreg = x2[sy,]
-        Ygp = pt_df[sy,]
+        # lr_param1 <- norm_fix(y, sy, x1)
+        # lr_param2 <- norm_fix(y, sy, x2)
+        # T = dim(pt_df)[2]
+        # N = sum(sy)
+        # S = y[sy]
+        # Z = x1[sy,]
+        # Yreg = x2[sy,]
+        # Ygp = pt_df[sy,]
 
-        xtr_vec_tr = xtr_vec[sy,]
-        xte_vec_tr = xte_vec[sy]
+        # xtr_vec_tr = xtr_vec[sy,]
+        # xte_vec_tr = xte_vec[sy]
 
-        r_v_tr = r_v[sy,]
+        # r_v_tr = r_v[sy,]
 
-        pi1 = mix_model_1_param$pi_1_m[v,t,impi]
-        pi2 = mix_model_1_param$pi_2_m[v,t,impi]
-        pi3 = mix_model_1_param$pi_3_m[v,t,impi]
-        w1 = mix_model_1_param$w1_lst[[impi]][[(v-1)*num_time_point+t]]
-        w2 = mix_model_1_param$w2_lst[[impi]][[(v-1)*num_time_point+t]]
-        w3 = mix_model_1_param$w3_lst[[impi]][[(v-1)*num_time_point+t]]
-        if (length(w1) != N) {
-            w1 = rep(pi1,N)
-            w2 = rep(pi2,N)
-            w3 = rep(pi3,N)
-        }
+        # pi1 = mix_model_1_param$pi_1_m[v,t,impi]
+        # pi2 = mix_model_1_param$pi_2_m[v,t,impi]
+        # pi3 = mix_model_1_param$pi_3_m[v,t,impi]
+        # w1 = mix_model_1_param$w1_lst[[impi]][[(v-1)*num_time_point+t]]
+        # w2 = mix_model_1_param$w2_lst[[impi]][[(v-1)*num_time_point+t]]
+        # w3 = mix_model_1_param$w3_lst[[impi]][[(v-1)*num_time_point+t]]
+        # if (length(w1) != N) {
+        #     w1 = rep(pi1,N)
+        #     w2 = rep(pi2,N)
+        #     w3 = rep(pi3,N)
+        # }
 
-        X = cbind(Z,Yreg)
-        U1 = apply(X,2,mean)
-        U2 = U1; U3 = U1
+        # X = cbind(Z,Yreg)
+        # U1 = apply(X,2,mean)
+        # U2 = U1; U3 = U1
 
-        S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        S2 = S1; S3 = S1
+        # S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        # S2 = S1; S3 = S1
 
-        # U1 = apply(Z,2,mean)
-        # U2 = apply(Yreg,2,mean)
-        # U3 = apply(Ygp[,-t],2,mean)
+        # # U1 = apply(Z,2,mean)
+        # # U2 = apply(Yreg,2,mean)
+        # # U3 = apply(Ygp[,-t],2,mean)
 
-        # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        # S2 = Reduce('+',lapply(split(Yreg,1:nrow(Yreg)),function(row) {(row-U2)%*%t(row-U2)})) / N
-        # S3 = Reduce('+',lapply(split(Ygp[,-t],1:nrow(Ygp)),function(row) {(row-U3)%*%t(row-U3)})) / N
+        # # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        # # S2 = Reduce('+',lapply(split(Yreg,1:nrow(Yreg)),function(row) {(row-U2)%*%t(row-U2)})) / N
+        # # S3 = Reduce('+',lapply(split(Ygp[,-t],1:nrow(Ygp)),function(row) {(row-U3)%*%t(row-U3)})) / N
 
-        rrg_param = em_rrg_obs_only(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
+        # rrg_param = em_rrg_obs_only(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
         
-        sink()
+        # sink()
 
         # Train rr model
         sink(sprintf("%s_rr_em_params.txt",w_fn))
