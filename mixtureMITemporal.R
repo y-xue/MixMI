@@ -387,6 +387,9 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         U1[(dim(Z)[2]+1):dim(X)[2]] = 0
         U2[1:dim(Z)[2]] = 0
 
+        S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        S2 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U2)%*%t(row-U2)})) / N
+
         rr_param = em_double_reg(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance)
         
         sink()
