@@ -535,8 +535,9 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	return(param)
 }
 
-em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,em_max_iter,tolerance) {
+em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,em_max_iter,tolerance,ridge=1e-5) {
 	print("em_double_reg")
+	print(sprintf("ridge: %s", ridge))
 
 	epsilon = 1e-8
 
@@ -591,16 +592,21 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		}
 
 		# estimate U, S
+		# U1 = apply(w1*X,2,sum)/sum(w1)
+		# U2 = apply(w2*X,2,sum)/sum(w2)
+		# U1[(dim(Z)[2]+1):dim(X)[2]] = 0
+		# U2[1:dim(Z)[2]] = 0
+
+		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
+		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		
 		U1 = apply(w1*X,2,sum)/sum(w1)
 		U2 = apply(w2*X,2,sum)/sum(w2)
-		U1[(dim(Z)[2]+1):dim(X)[2]] = 0
-        U2[1:dim(Z)[2]] = 0
-
-        print(U1)
-        print(U2)
-
+		
 		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
 		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		
+
 		# S2 = S1
 
 		# U1 = apply(w1*Z,2,sum)/sum(w1)
@@ -621,8 +627,8 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		swZ = sw1 * Z
 		swS = sw1 * S
 		ztwz <- t(swZ) %*% swZ
-		ridge <- 0.00001
 		pen <- ridge * diag(ztwz)
+		# or pen <- ridge * diag(N) ?
 		if (length(pen)==1) pen <- matrix(pen)
 		v <- solve(ztwz + diag(pen))
 		lr_beta1 <- v %*% t(swZ) %*% swS
@@ -635,7 +641,6 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		swY = sw2 * Y
 		swS = sw2 * S
 		ztwz <- t(swY) %*% swY
-		ridge <- 0.00001
 		pen <- ridge * diag(ztwz)
 		if (length(pen)==1) pen <- matrix(pen)
 		v <- solve(ztwz + diag(pen))

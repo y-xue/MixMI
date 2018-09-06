@@ -125,8 +125,11 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
     }
     prt_m_norm = t(apply(prt_m,1,function(row) (row-min(row))/(max(row)-min(row))))
 
+    ridge_vec = c(1e-5, 10)
+
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
+        ridge = ridge_vec[k]
         for (i in 1:m) {
             print(sprintf("imp: %s",i))
 
@@ -181,7 +184,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                         r_v = r_vlist[[v]][,-t]
                     }
 
-                    w_dir = sprintf("%s/em_param/imp_%s_iter_%s",out_cdn,i,k)
+                    w_dir = sprintf("%s/em_param/imp_%s_iter_%s_ridge_%s",out_cdn,i,k,ridge)
                     dir.create(w_dir,recursive=TRUE)
                     w_fn = sprintf("%s/val%s_tp%s",w_dir,v,t)
 
@@ -214,7 +217,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                         if (!obs_only) {
                             imp_res <- impute_em_rrg(v,y,ry,x1,x2,pt_df,xtr_vec,xte_vec,t,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
                         } else {
-                            imp_res <- impute_em_rrg_obs_only(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
+                            imp_res <- impute_em_rrg_obs_only(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
                         }
 
                         # mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
@@ -251,7 +254,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
     return(imp_tensor)
 }
 
-impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn)
+impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge=1e-5)
 {
     print("impute_em_rrg_obs_only")
 
@@ -372,25 +375,25 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         }
 
         X = cbind(Z,Y)
-        # U1 = apply(X,2,mean)
-        # U2 = U1
-
-        # S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        # S2 = S1
-        # # U1 = apply(Z,2,mean)
-        # # U2 = apply(Yreg,2,mean)
-        # # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        # # S2 = Reduce('+',lapply(split(Y,1:nrow(Y)),function(row) {(row-U2)%*%t(row-U2)})) / N
-        
-        U = apply(X,2,mean)
-        U1 = U; U2 = U
-        U1[(dim(Z)[2]+1):dim(X)[2]] = 0
-        U2[1:dim(Z)[2]] = 0
+        U1 = apply(X,2,mean)
+        U2 = U1
 
         S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
-        S2 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U2)%*%t(row-U2)})) / N
+        S2 = S1
+        # U1 = apply(Z,2,mean)
+        # U2 = apply(Yreg,2,mean)
+        # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        # S2 = Reduce('+',lapply(split(Y,1:nrow(Y)),function(row) {(row-U2)%*%t(row-U2)})) / N
+        
+        # U = apply(X,2,mean)
+        # U1 = U; U2 = U
+        # U1[(dim(Z)[2]+1):dim(X)[2]] = 0
+        # U2[1:dim(Z)[2]] = 0
 
-        rr_param = em_double_reg(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance)
+        # S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
+        # S2 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U2)%*%t(row-U2)})) / N
+
+        rr_param = em_double_reg(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance,ridge)
         
         sink()
 
