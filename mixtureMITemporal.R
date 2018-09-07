@@ -125,7 +125,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
     }
     prt_m_norm = t(apply(prt_m,1,function(row) (row-min(row))/(max(row)-min(row))))
 
-    ridge_vec = c(1e-5, 1e-5, 0.01)
+    ridge_vec = c(1e-5, 1e-5, 1e-4)
 
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
