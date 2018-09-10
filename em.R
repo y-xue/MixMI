@@ -600,15 +600,15 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
 		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
 		
-		# U1 = apply(w1*X,2,sum)/sum(w1)
-		U1 = apply(w1*X,2,sum)/(sum(w1)+2*ridge) # ridge regularization
-		# U2 = apply(w2*X,2,sum)/sum(w2)
-		U2 = apply(w2*X,2,sum)/(sum(w2)+2*ridge) # ridge regularization
+		U1 = apply(w1*X,2,sum)/sum(w1)
+		# U1 = apply(w1*X,2,sum)/(sum(w1)+2*ridge) # ridge regularization
+		U2 = apply(w2*X,2,sum)/sum(w2)
+		# U2 = apply(w2*X,2,sum)/(sum(w2)+2*ridge) # ridge regularization
 		
-		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
-		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / (sum(w1)+4*ridge) # ridge regularization
-		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
-		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / (sum(w2)+4*ridge) # ridge regularization
+		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
+		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / (sum(w1)+4*ridge) # ridge regularization
+		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
+		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / (sum(w2)+4*ridge) # ridge regularization
 
 		# S2 = S1
 
