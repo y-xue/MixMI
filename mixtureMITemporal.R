@@ -125,7 +125,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
     }
     prt_m_norm = t(apply(prt_m,1,function(row) (row-min(row))/(max(row)-min(row))))
 
-    ridge_vec = c(1e-5, 1e-5, 1e-4)
+    ridge_vec = c(1e-5, 1e-5, 0.01)
 
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
@@ -184,7 +184,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                         r_v = r_vlist[[v]][,-t]
                     }
 
-                    w_dir = sprintf("%s/em_param/imp_%s_iter_%s_ridge_%s",out_cdn,i,k,ridge)
+                    w_dir = sprintf("%s/em_param/imp_%s_iter_%s_ridge_all_%s",out_cdn,i,k,ridge)
                     dir.create(w_dir,recursive=TRUE)
                     w_fn = sprintf("%s/val%s_tp%s",w_dir,v,t)
 
