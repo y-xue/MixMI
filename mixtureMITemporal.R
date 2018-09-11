@@ -275,15 +275,15 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # that have at least one measurement
         # 
         sy = ry
-        # for (i in 1:length(sy)) {
-        #     if (sy[i] == TRUE) {
-        #         ts = pt_df[i,-t][r_v[i,]]
-        #         # if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
-        #         if (sum(r_v[i,]) == 0) {
-        #             sy[i] = FALSE
-        #         }
-        #     }
-        # }
+        for (i in 1:length(sy)) {
+            if (sy[i] == TRUE) {
+                ts = pt_df[i,-t][r_v[i,]]
+                # if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
+                if (sum(r_v[i,]) == 0) {
+                    sy[i] = FALSE
+                }
+            }
+        }
 
         # Train with all records
         # 
