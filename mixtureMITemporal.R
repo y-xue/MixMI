@@ -125,7 +125,8 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
     }
     prt_m_norm = t(apply(prt_m,1,function(row) (row-min(row))/(max(row)-min(row))))
 
-    ridge_vec = c(1e-5, 1e-5, 0.01)
+    ridge_vec = rep(1e-5, maxit)
+    # ridge_vec = c(1e-5, 1e-5, 0.01)
 
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
@@ -166,11 +167,11 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                     ori_y = ori_tensor[[t]][,v]
 
                     # if (rt) {
-                      x2 = cbind(pt_df[,-t],prt_m_norm[,-c(1,num_time_point)]) # prt_m_norm[,1] are all zero, including which causes singular problem
+                      # x2 = cbind(pt_df[,-t],prt_m_norm[,-c(1,num_time_point)]) # prt_m_norm[,1] are all zero, including which causes singular problem
                     # } else {
                     #   x2 = pt_df[,-t]
                     # }
-                    # x2 = pt_df[,-t]
+                    x2 = pt_df[,-t]
 
                     if (is.null(artificial_prt_tensor)) {
                         xte_vec = prt_m_norm[,t]
@@ -184,7 +185,9 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                         r_v = r_vlist[[v]][,-t]
                     }
 
-                    w_dir = sprintf("%s/em_param/imp_%s_iter_%s_ridge_%s",out_cdn,i,k,ridge)
+                    # w_dir = sprintf("%s/em_param/imp_%s_iter_%s_ridge_%s",out_cdn,i,k,ridge)
+                    w_dir = sprintf("%s/em_param/imp_%s_iter_%s",out_cdn,i,k)
+
                     dir.create(w_dir,recursive=TRUE)
                     w_fn = sprintf("%s/val%s_tp%s",w_dir,v,t)
 
@@ -220,17 +223,17 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                             imp_res <- impute_em_rrg_obs_only(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
                         }
 
-                        # mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
-                        # mix_model_1_param$pi_2_m[v,t,i] = (imp_res$rrg_em_param)$pi2
-                        # mix_model_1_param$pi_3_m[v,t,i] = (imp_res$rrg_em_param)$pi3
-                        # mix_model_1_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w1
-                        # mix_model_1_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w2
-                        # mix_model_1_param$w3_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w3
+                        mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
+                        mix_model_1_param$pi_2_m[v,t,i] = (imp_res$rrg_em_param)$pi2
+                        mix_model_1_param$pi_3_m[v,t,i] = (imp_res$rrg_em_param)$pi3
+                        mix_model_1_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w1
+                        mix_model_1_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w2
+                        mix_model_1_param$w3_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rrg_em_param)$w3
 
-                        mix_model_2_param$pi_1_m[v,t,i] = (imp_res$rr_em_param)$pi1
-                        mix_model_2_param$pi_2_m[v,t,i] = (imp_res$rr_em_param)$pi2
-                        mix_model_2_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rr_em_param)$w1
-                        mix_model_2_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rr_em_param)$w2
+                        # mix_model_2_param$pi_1_m[v,t,i] = (imp_res$rr_em_param)$pi1
+                        # mix_model_2_param$pi_2_m[v,t,i] = (imp_res$rr_em_param)$pi2
+                        # mix_model_2_param$w1_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rr_em_param)$w1
+                        # mix_model_2_param$w2_lst[[i]][[(v-1)*num_time_point+t]] = (imp_res$rr_em_param)$w2
 
                         imp_tensor[[t]][[v]][,i] = imp_res$pred
                         
@@ -242,13 +245,13 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                 }
             }
 
-            for (t in 1:length(pv_tensor)) {
-                imputed <- pv_tensor[[t]]
-                for (v in visit_col_sequence_list[[t]]) {    
-                    imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-                }
-                write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
-            }
+            # for (t in 1:length(pv_tensor)) {
+            #     imputed <- pv_tensor[[t]]
+            #     for (v in visit_col_sequence_list[[t]]) {    
+            #         imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+            #     }
+            #     write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
+            # }
         }
     }
     return(imp_tensor)
@@ -568,21 +571,23 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
 
         mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
         
-        pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
-        pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
-        w1 = source(sprintf("%s_rr.w1",w_fn))$value
-        w2 = source(sprintf("%s_rr.w2",w_fn))$value
-        U1 = source(sprintf("%s_rr.U1",w_fn))$value
-        U2 = source(sprintf("%s_rr.U2",w_fn))$value
-        S1 = source(sprintf("%s_rr.S1",w_fn))$value
-        S2 = source(sprintf("%s_rr.S2",w_fn))$value
-        lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
-        lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
-        lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
-        lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+        # # rr
 
-        rr_param = list(pi1,pi2,w1,w2)
-        names(rr_param) = c('pi1','pi2','w1','w2')
+        # pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
+        # pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
+        # w1 = source(sprintf("%s_rr.w1",w_fn))$value
+        # w2 = source(sprintf("%s_rr.w2",w_fn))$value
+        # U1 = source(sprintf("%s_rr.U1",w_fn))$value
+        # U2 = source(sprintf("%s_rr.U2",w_fn))$value
+        # S1 = source(sprintf("%s_rr.S1",w_fn))$value
+        # S2 = source(sprintf("%s_rr.S2",w_fn))$value
+        # lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
+        # lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
+        # lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
+        # lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+
+        # rr_param = list(pi1,pi2,w1,w2)
+        # names(rr_param) = c('pi1','pi2','w1','w2')
 
         # # sink(sprintf("%s_w_pred_error.txt",w_fn))
         # # print(sprintf("mix_model_num: %s",mix_model_num))
@@ -616,36 +621,38 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # # rr_prediction = w1 * rr_lr_prediction1 + w2 * rr_lr_prediction2
         # # print(sprintf("rr_pred_error with w: %s", sum(abs(ori_y_te[test_r] - rr_prediction[test_r]))))
 
-        if (mix_model_num == 2) {
-            rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-            rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+        # if (mix_model_num == 2) {
+        #     rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+        #     rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
             
-            wws = get_ww_rr(Nstar,x1[!ry,],x2[!ry,],pi1,pi2,U1,U2,S1,S2)
-            ww1 = wws$w1; ww2 = wws$w2
+        #     wws = get_ww_rr(Nstar,x1[!ry,],x2[!ry,],pi1,pi2,U1,U2,S1,S2)
+        #     ww1 = wws$w1; ww2 = wws$w2
 
-            prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
-        }
+        #     prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
+        # }
 
-        # ll = source(sprintf("%s.ll",w_fn))$value
-        # pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
-        # pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
-        # pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
-        # w1 = source(sprintf("%s_rrg.w1",w_fn))$value
-        # w2 = source(sprintf("%s_rrg.w2",w_fn))$value
-        # w3 = source(sprintf("%s_rrg.w3",w_fn))$value
-        # U1 = source(sprintf("%s_rrg.U1",w_fn))$value
-        # U2 = source(sprintf("%s_rrg.U2",w_fn))$value
-        # U3 = source(sprintf("%s_rrg.U3",w_fn))$value
-        # S1 = source(sprintf("%s_rrg.S1",w_fn))$value
-        # S2 = source(sprintf("%s_rrg.S2",w_fn))$value
-        # S3 = source(sprintf("%s_rrg.S3",w_fn))$value
-        # lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
-        # lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
-        # lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
-        # lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+        # # rrg
 
-        # rrg_param <- list(pi1,pi2,pi3,w1,w2,w3)
-        # names(rrg_param) <- c('pi1','pi2','pi3','w1','w2','w3')
+        ll = source(sprintf("%s.ll",w_fn))$value
+        pi1 = source(sprintf("%s_rrg.pi1",w_fn))$value
+        pi2 = source(sprintf("%s_rrg.pi2",w_fn))$value
+        pi3 = source(sprintf("%s_rrg.pi3",w_fn))$value
+        w1 = source(sprintf("%s_rrg.w1",w_fn))$value
+        w2 = source(sprintf("%s_rrg.w2",w_fn))$value
+        w3 = source(sprintf("%s_rrg.w3",w_fn))$value
+        U1 = source(sprintf("%s_rrg.U1",w_fn))$value
+        U2 = source(sprintf("%s_rrg.U2",w_fn))$value
+        U3 = source(sprintf("%s_rrg.U3",w_fn))$value
+        S1 = source(sprintf("%s_rrg.S1",w_fn))$value
+        S2 = source(sprintf("%s_rrg.S2",w_fn))$value
+        S3 = source(sprintf("%s_rrg.S3",w_fn))$value
+        lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
+        lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
+        lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
+        lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+
+        rrg_param <- list(pi1,pi2,pi3,w1,w2,w3)
+        names(rrg_param) <- c('pi1','pi2','pi3','w1','w2','w3')
 
         # # xtr_vec_tr = xtr_vec[sy,]
         # # xte_vec_tr = xte_vec[sy]
@@ -677,18 +684,18 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # # md3 = glm(w ~ ., family=quasibinomial(link='logit'),data=df)
 
 
-        # lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-        # lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+        lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+        lr_prediction2 = x2[!ry,  ] %*% lr_beta2
 
-        # Ystar = pt_df[!ry,]
+        Ystar = pt_df[!ry,]
         
-        # xtr_vec_star = xtr_vec[!ry,]
-        # xte_vec_star = xte_vec[!ry]
-        # r_v_star = r_v[!ry,]
+        xtr_vec_star = xtr_vec[!ry,]
+        xte_vec_star = xte_vec[!ry]
+        r_v_star = r_v[!ry,]
 
-        # if (Nstar == 1) {
-        #     Ystar = t(as.matrix(Ystar))
-        # }
+        if (Nstar == 1) {
+            Ystar = t(as.matrix(Ystar))
+        }
 
         # # Rinv_lst = mclapply(1:Nstar, function(i) Rinverse(l,xtr_vec_star[i,][r_v_star[i,]]), mc.cores=num_cores)
         # # M = unlist(mclapply(1:Nstar,function (i) yhat(l,xte_vec_star[i],xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
@@ -717,61 +724,60 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
         # # print(sprintf("rrg_pred_error with w: %s", sum(abs(ori_y_te[test_r] - rrg_prediction[test_r]))))
             
 
-        # if (mix_model_num != 2) {
-        #     lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-        #     lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+        if (mix_model_num != 2) {
+            lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+            lr_prediction2 = x2[!ry,  ] %*% lr_beta2
 
-        #     Ystar = pt_df[!ry,]
+            Ystar = pt_df[!ry,]
             
-        #     xtr_vec_star = xtr_vec[!ry,]
-        #     xte_vec_star = xte_vec[!ry]
-        #     r_v_star = r_v[!ry,]
+            xtr_vec_star = xtr_vec[!ry,]
+            xte_vec_star = xte_vec[!ry]
+            r_v_star = r_v[!ry,]
 
-        #     if (Nstar == 1) {
-        #         Ystar = t(as.matrix(Ystar))
-        #     }
+            if (Nstar == 1) {
+                Ystar = t(as.matrix(Ystar))
+            }
 
-        #     # GPprediction_res = list()
-        #     # for (i in 1:Nstar) {
-        #     #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
-        #     # }
-        #     GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
-        #     gp_prediction = sapply(GPprediction_res, function(x) x$pred)
+            # GPprediction_res = list()
+            # for (i in 1:Nstar) {
+            #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
+            # }
+            GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
+            gp_prediction = sapply(GPprediction_res, function(x) x$pred)
 
-        #     wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
-        #     ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
+            wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
+            ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
 
-        #     dump("ww1", sprintf("%s_rrg.ww1",w_fn))
-        #     dump("ww2", sprintf("%s_rrg.ww2",w_fn))
-        #     dump("ww3", sprintf("%s_rrg.ww3",w_fn))
+            dump("ww1", sprintf("%s_rrg.ww1",w_fn))
+            dump("ww2", sprintf("%s_rrg.ww2",w_fn))
+            dump("ww3", sprintf("%s_rrg.ww3",w_fn))
 
-        #     prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
+            # prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
             
-        #     if (mix_model_num == 1) {
-        #         # RRG
-        #         # if (t == 1) {
-        #         #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
-        #         # } else {
-        #             prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
-        #         # }
-        #     } else {
-        #         # GP
-        #         prediction = gp_prediction
-        #     }
-        # }
-        # sink()
+            if (mix_model_num == 1) {
+                # RRG
+                # if (t == 1) {
+                #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
+                # } else {
+                    prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
+                # }
+            } else {
+                # GP
+                prediction = gp_prediction
+            }
+        }
 
         # print(sprintf("pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
         sink(sprintf("%s_loadEM_pred_error.txt",w_fn))
         print(sprintf("num masked: %s", sum(test_r)))
         print(sprintf("mix_model_num: %s", mix_model_num))
-        print(sprintf("rr_pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
+        print(sprintf("rrg_pred_error: %s", sum(abs(ori_y_te[test_r] - prediction[test_r]))))
         sink()
     }
 
     res$pred = as.matrix(prediction)
-    res$rr_em_param = rr_param
-    # res$rrg_em_param = rrg_param
+    # res$rr_em_param = rr_param
+    res$rrg_em_param = rrg_param
     return(res)
 }
 
@@ -839,16 +845,16 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
         imp_tensor = sampler_rg(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, printFlag, ...)
     }
 
-    for (t in 1:length(pv_tensor)) {
-        for (i in 1:m) {
-            for (v in visit_col_sequence_list[[t]]) {   
-                pv_tensor[[t]][!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-                write.csv(pv_tensor[[t]], file=sprintf("%s/imp_%d_attime_%s.csv",out_cdn,i,t), row.names=FALSE)
-            }
-        }
-    }
+    # for (t in 1:length(pv_tensor)) {
+    #     for (i in 1:m) {
+    #         for (v in visit_col_sequence_list[[t]]) {   
+    #             pv_tensor[[t]][!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+    #             write.csv(pv_tensor[[t]], file=sprintf("%s/imp_%d_attime_%s.csv",out_cdn,i,t), row.names=FALSE)
+    #         }
+    #     }
+    # }
 
-    return(pv_tensor)
+    # return(pv_tensor)
 }
 
 
