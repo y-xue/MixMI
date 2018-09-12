@@ -435,7 +435,6 @@ impute_em_rrg_obs_only <- function(impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,
 
         dump("ww1", sprintf("%s_rr.ww1",w_fn))
         dump("ww2", sprintf("%s_rr.ww2",w_fn))
-        dump("ww3", sprintf("%s_rr.ww3",w_fn))
 
         rr_prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
         rr_pi_prediction = pi1 * rr_lr_prediction1 + pi2 * rr_lr_prediction2
