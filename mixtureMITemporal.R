@@ -178,6 +178,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                         xte_vec = prt_m_norm[,t]
                         xtr_vec = prt_m_norm[,-t]
                     } else {
+                        print("artificial_prt_tensor")
                         xte_vec = artificial_prt_tensor[[v]][,t]
                         xtr_vec = artificial_prt_tensor[[v]][,-t]
                     }
