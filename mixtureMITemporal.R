@@ -172,7 +172,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, out_cdn
                     #   x2 = pt_df[,-t]
                     # }
                     # x2 = pt_df[,-t]
-                    x2 = cbind(pt_df[,-t],prt_tensor[[j]][,-c(1,num_time_point)])
+                    x2 = cbind(pt_df[,-t],artificial_prt_tensor[[v]][,-c(1,num_time_point)])
 
                     if (is.null(artificial_prt_tensor)) {
                         xte_vec = prt_m_norm[,t]
