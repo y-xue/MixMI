@@ -34,7 +34,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", ridge=1e
 
 
 	# artificial experiment
-	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, artificial_prt_tensor=artificial_prt_tensor, ori_tensor=ori_norm_pv_tensor, m = 1, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
+	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, artificial_prt_tensor=artificial_prt_tensor, ori_tensor=ori_norm_pv_tensor, m = 5, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
 	
 	# # real data experiment
 	# mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, ori_tensor=ori_norm_pv_tensor, m = 1, exclude = exclude, maxit = 5, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, ridge = ridge, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
@@ -50,7 +50,7 @@ gpmodel_dir = ""
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_rrg_equalpi_TregAT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_0.5_joint_rr_sameXweight31_em30",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_0.5_joint_rr_sameXweight31_em30_5imp",tp,missing_pcnt*100)
 run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir)
 
 # for (ridge in c(1e-4, 1e-3, 0.01, 0.1, 1, 10)) {
