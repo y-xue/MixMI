@@ -44,7 +44,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", ridge=1e
 tp = 11
 missing_pcnt = 0.2
 data_prefix = "LabViewCase_11tp_1measure"
-gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_a1_joint_rrg_sameXweight31_em30_3imp/GP_models",tp,missing_pcnt*100)
+# gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_a1_joint_rrg_sameXweight31_em30_3imp/GP_models",tp,missing_pcnt*100)
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rr_sameXweight31_em30_3imp",tp,missing_pcnt*100)
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
