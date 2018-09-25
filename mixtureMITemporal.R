@@ -132,7 +132,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
         # ridge = ridge_vec[k]
-        for (i in 1:1) {
+        for (i in 1:m) {
             print(sprintf("imp: %s",i))
 
             # fill the data with the last set of imputations
@@ -544,9 +544,9 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
                 prediction = rrg_prediction
             }
 
-            if (t == 1) {
-                prediction = rrg_rescale_rr_prediction
-            }
+            # if (t == 1) {
+            #     prediction = rrg_rescale_rr_prediction
+            # }
         }
 
         if (model_type == "rrg") {
