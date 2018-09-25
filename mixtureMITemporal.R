@@ -173,13 +173,18 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
                     #   x2 = pt_df[,-t]
                     # }
                     # x2 = pt_df[,-t]
-                    x2 = cbind(pt_df[,-t],artificial_prt_tensor[[v]][,-c(1,num_time_point)])
+                    
 
                     if (is.null(artificial_prt_tensor)) {
+                        print("prt_m_norm")
+                        x2 = cbind(pt_df[,-t],prt_m_norm[,-c(1,num_time_point)])
+                        
                         xte_vec = prt_m_norm[,t]
                         xtr_vec = prt_m_norm[,-t]
                     } else {
                         print("artificial_prt_tensor")
+                        x2 = cbind(pt_df[,-t],artificial_prt_tensor[[v]][,-c(1,num_time_point)])
+                        
                         xte_vec = artificial_prt_tensor[[v]][,t]
                         xtr_vec = artificial_prt_tensor[[v]][,-t]
                     }

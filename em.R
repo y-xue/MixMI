@@ -346,6 +346,7 @@ get_ww_rr <- function(N,Z,Y,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
 em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,em_max_iter,tolerance,step,gd_miter,gd_precision,ridge=1e-5)
 {
 	print("em_rrg_obs_only")
+	print(sprintf("ridge: %s", ridge))
 
 	epsilon = 1e-8
 
