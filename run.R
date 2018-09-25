@@ -46,7 +46,7 @@ missing_pcnt = 0.2
 data_prefix = "LabViewCase_11tp_1measure"
 model_type = "rrg"
 
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rrg_sameXweight31_em30_3imp_ridge_0.01",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rrg_sameXweight31_em30_3imp",tp,missing_pcnt*100)
 gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
@@ -54,7 +54,7 @@ gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_nor
 
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_0.5_joint_rrg_sameXweight31_em30/GP_models",tp,missing_pcnt*100)
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight31_em30_3imp",tp,missing_pcnt*100)
-run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type,ridge=0.01)
+run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type)
 
 # for (ridge in c(1e-4, 1e-3, 0.01, 0.1, 1, 10)) {
 # 	out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rr_sameXweight31_em30_one_ridge_%s",tp,missing_pcnt*100,ridge)
