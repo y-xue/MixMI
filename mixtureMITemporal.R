@@ -132,7 +132,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
         # ridge = ridge_vec[k]
-        for (i in 1:1) {
+        for (i in 1:m) {
             print(sprintf("imp: %s",i))
 
             # fill the data with the last set of imputations
