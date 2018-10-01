@@ -82,7 +82,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
     # 0 for GP in RRG, 1 for RRG, 2 for RR
     mix_model_num = 1
 
-    pi3 = 1/3
+    pi3 = 0.1
     pi1 = (1-pi3)/2
     pi2 = (1-pi3)/2
     
@@ -613,7 +613,8 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
 
         mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
         
-        if (model_type == "rr" || model_type == "both") {
+        if (mix_model_num == 2) {
+        # if (model_type == "rr" || model_type == "both") {
             # rr
 
             print("loading rr EM params")
@@ -683,7 +684,8 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
 
         # rrg
 
-        if (model_type == "rrg" || model_type == "both") {
+        if (mix_model_num != 2) {
+        # if (model_type == "rrg" || model_type == "both") {
 
             print("loading rrg EM params")
 
@@ -724,41 +726,41 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
                 Ystar = t(as.matrix(Ystar))
             }
 
-            if (mix_model_num != 2) {
-                lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-                lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+            # if (mix_model_num != 2) {
+            lr_prediction1 = x1[!ry,  ] %*% lr_beta1
+            lr_prediction2 = x2[!ry,  ] %*% lr_beta2
 
-                Ystar = pt_df[!ry,]
-                
-                xtr_vec_star = xtr_vec[!ry,]
-                xte_vec_star = xte_vec[!ry]
-                r_v_star = r_v[!ry,]
+            Ystar = pt_df[!ry,]
+            
+            xtr_vec_star = xtr_vec[!ry,]
+            xte_vec_star = xte_vec[!ry]
+            r_v_star = r_v[!ry,]
 
-                if (Nstar == 1) {
-                    Ystar = t(as.matrix(Ystar))
-                }
-
-                # GPprediction_res = list()
-                # for (i in 1:Nstar) {
-                #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
-                # }
-                GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
-                gp_prediction = sapply(GPprediction_res, function(x) x$pred)
-
-                # prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
-                
-                if (mix_model_num == 1) {
-                    # RRG
-                    # if (t == 1) {
-                    #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
-                    # } else {
-                        prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
-                    # }
-                } else {
-                    # GP
-                    prediction = gp_prediction
-                }
+            if (Nstar == 1) {
+                Ystar = t(as.matrix(Ystar))
             }
+
+            # GPprediction_res = list()
+            # for (i in 1:Nstar) {
+            #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
+            # }
+            GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
+            gp_prediction = sapply(GPprediction_res, function(x) x$pred)
+
+            # prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
+            
+            if (mix_model_num == 1) {
+                # RRG
+                # if (t == 1) {
+                #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
+                # } else {
+                    prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
+                # }
+            } else {
+                # GP
+                prediction = gp_prediction
+            }
+            # }
         }
         
 
