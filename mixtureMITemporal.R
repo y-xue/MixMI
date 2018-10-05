@@ -863,6 +863,8 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
 {
     set.seed(seed)
 
+    dir.create(out_cdn,recursive=TRUE)
+
     # real (observed) values indicator, per time point
     r_list <- lapply(pv_tensor, function(x) !is.na(x))
 
