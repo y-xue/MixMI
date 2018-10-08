@@ -106,10 +106,10 @@ data_prefix = "all_data_7tp_1measure"
 
 
 model_type = "both"
-out_cdn = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_not_obsonly_sameXweight31_em30_pi3_0.1_3imp",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_sameXweight31_em30_pi3_0.1_3imp",tp,missing_pcnt*100)
 gpmodel_dir = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_sameXweight31_em30_pi3_0.1_3imp/GP_models",tp,missing_pcnt*100)
 
-run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type,obs_only=FALSE)
+run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type,obs_only=TRUE)
 # for (ridge in c(1e-4, 1e-3, 0.01, 0.1, 1, 10)) {
 # 	out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rr_sameXweight31_em30_one_ridge_%s",tp,missing_pcnt*100,ridge)
 # 	run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,ridge=ridge)
