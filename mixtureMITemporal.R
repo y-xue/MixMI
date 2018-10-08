@@ -369,10 +369,6 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             # # S2 = Reduce('+',lapply(split(Yreg,1:nrow(Yreg)),function(row) {(row-U2)%*%t(row-U2)})) / N
             # # S3 = Reduce('+',lapply(split(Ygp[,-t],1:nrow(Ygp)),function(row) {(row-U3)%*%t(row-U3)})) / N
 
-            print(Ygp[1,])
-            print(r_v_tr[1,])
-            print(Ygp[1,-t][r_v_tr[1,]])
-
             sink(sprintf("%s_rrg_em_params.txt",w_fn))
 
             rrg_param = em_rrg_obs_only(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,l,em_max_iter,tolerance,step,gd_miter,gd_precision,ridge)
@@ -456,8 +452,6 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         if (model_type == "rr" || model_type == "both") {
             # Train rr model
             print("training EM rr")
-
-            sink(sprintf("%s_rr_em_params.txt",w_fn))
             
             # lr_param1 <- norm_fix(y, ry, x1)
             # lr_param2 <- norm_fix(y, ry, x2)
@@ -500,6 +494,8 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
 
             # S1 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U1)%*%t(row-U1)})) / N
             # S2 = Reduce('+',lapply(split(X,1:nrow(X)),function(row) {(row-U2)%*%t(row-U2)})) / N
+
+            sink(sprintf("%s_rr_em_params.txt",w_fn))
 
             rr_param = em_double_reg(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,em_max_iter,tolerance,ridge)
             
