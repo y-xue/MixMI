@@ -191,6 +191,8 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
 
                     if (obs_only) {
                         r_v = r_vlist[[v]][,-t]
+                    } else {
+                        r_v = matrix(TRUE, num_pt, num_time_point-1)
                     }
 
                     # w_dir = sprintf("%s/em_param/imp_%s_iter_%s_ridge_%s",out_cdn,i,k,ridge)
@@ -208,11 +210,11 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
                         GPmodel_fn = sprintf("%s/val%s_tp%s",gpmodel_dir,v,t)
                         if (!file.exists(GPmodel_fn)) {
                             print("fitting GPmodel")
-                            if (!obs_only) {
-                                GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,],pt_df[pt,-t],pt),mc.cores=num_cores)
-                            } else {
-                                GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,][r_v[pt,]],pt_df[pt,-t][r_v[pt,]]),mc.cores=num_cores)
-                            }
+                            # if (!obs_only) {
+                            #     GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,],pt_df[pt,-t],pt),mc.cores=num_cores)
+                            # } else {
+                            GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,][r_v[pt,]],pt_df[pt,-t][r_v[pt,]]),mc.cores=num_cores)
+                            # }
                             dump("GPmodel_vec",GPmodel_fn)
                         } else {
                             GPmodel_vec = source(GPmodel_fn)$value
@@ -229,11 +231,11 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
                     
 
                     if (sum(!ry) > 0) {
-                        if (!obs_only) {
-                            imp_res <- impute_em_rrg(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
-                        } else {
-                            imp_res <- impute_em_rrg_obs_only(model_type,i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
-                        }
+                        # if (!obs_only) {
+                        #     imp_res <- impute_em_rrg(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
+                        # } else {
+                        imp_res <- impute_em_rrg_obs_only(model_type,i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
+                        # }
 
                         if (model_type == "rrg" || model_type == "both") {
                             mix_model_1_param$pi_1_m[v,t,i] = (imp_res$rrg_em_param)$pi1
@@ -326,8 +328,6 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             # Train rrg model
             print("training EM rrg")
 
-            sink(sprintf("%s_rrg_em_params.txt",w_fn))
-
             lr_param1 <- norm_fix(y, sy, x1)
             lr_param2 <- norm_fix(y, sy, x2)
             T = dim(pt_df)[2]
@@ -368,6 +368,12 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             # # S1 = Reduce('+',lapply(split(Z,1:nrow(Z)),function(row) {(row-U1)%*%t(row-U1)})) / N
             # # S2 = Reduce('+',lapply(split(Yreg,1:nrow(Yreg)),function(row) {(row-U2)%*%t(row-U2)})) / N
             # # S3 = Reduce('+',lapply(split(Ygp[,-t],1:nrow(Ygp)),function(row) {(row-U3)%*%t(row-U3)})) / N
+
+            print(Ygp[1,])
+            print(r_v_tr[1,])
+            print(Ygp[1,-t][r_v_tr[1,]])
+
+            sink(sprintf("%s_rrg_em_params.txt",w_fn))
 
             rrg_param = em_rrg_obs_only(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_param1$beta,lr_param1$sigma,lr_param2$beta,lr_param2$sigma,l,em_max_iter,tolerance,step,gd_miter,gd_precision,ridge)
             
