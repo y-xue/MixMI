@@ -82,8 +82,8 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", model_ty
 
 }
 
-# tp = 11
-tp=7
+tp = 11
+# tp=7
 missing_pcnt = 0.2
 data_prefix = "LabViewCase_11tp_1measure"
 # data_prefix = "all_data_7tp_1measure"
