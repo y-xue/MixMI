@@ -301,8 +301,8 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         for (i in 1:length(sy)) {
             if (sy[i] == TRUE) {
                 ts = pt_df[i,-t][r_v[i,]]
-                # if (sum(r_v[i,]) < 3 || length(unique(ts)) == 1) {
-                if (sum(r_v[i,]) == 0) {
+                if (sum(r_v[i,]) < 4) {
+                # if (sum(r_v[i,]) == 0) {
                     sy[i] = FALSE
                 }
             }
@@ -453,18 +453,18 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             # Train rr model
             print("training EM rr")
             
-            # lr_param1 <- norm_fix(y, ry, x1)
-            # lr_param2 <- norm_fix(y, ry, x2)
-            # S = y[ry]
-            # Z = x1[ry,]
-            # Y = x2[ry,]
-            # N = length(S)
-            lr_param1 <- norm_fix(y, sy, x1)
-            lr_param2 <- norm_fix(y, sy, x2)
-            S = y[sy]
-            Z = x1[sy,]
-            Y = x2[sy,]
+            lr_param1 <- norm_fix(y, ry, x1)
+            lr_param2 <- norm_fix(y, ry, x2)
+            S = y[ry]
+            Z = x1[ry,]
+            Y = x2[ry,]
             N = length(S)
+            # lr_param1 <- norm_fix(y, sy, x1)
+            # lr_param2 <- norm_fix(y, sy, x2)
+            # S = y[sy]
+            # Z = x1[sy,]
+            # Y = x2[sy,]
+            # N = length(S)
 
             pi1 = mix_model_2_param$pi_1_m[v,t,impi]
             pi2 = mix_model_2_param$pi_2_m[v,t,impi]
@@ -542,12 +542,16 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         }
 
         if (model_type == "both") {
-            # if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
-            if (rr_param$abs_error < rrg_param$abs_error) {
+            if ((rr_param$abs_error / sum(ry)) < (rrg_param$abs_error / sum(sy))) {
+            # if (rr_param$abs_error < rrg_param$abs_error) {
                 mix_model_num = rr_param$mix_model_num
                 prediction = rr_prediction
             } else {
                 mix_model_num = rrg_param$mix_model_num
+                
+                rr_pred_idx = is.na(rrg_prediction)
+                rrg_prediction[rr_pred_idx] = rr_prediction[rr_pred_idx]
+
                 prediction = rrg_prediction
             }
 

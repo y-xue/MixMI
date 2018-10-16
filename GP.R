@@ -64,6 +64,9 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 	if (length(Y) == 0 || length(unique(Y)) == 1) {
 		res$yhat = unique(Y)
 		res$mse = NA
+	} else if (length(Y) < 4) {
+		res$yhat = NA
+		res$mse = NA
 	} else {
 
 		if (is.matrix(X) == FALSE){

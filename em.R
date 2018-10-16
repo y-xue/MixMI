@@ -390,7 +390,9 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 	print(sprintf("loglik: %s",loglik))
 	print(sprintf("num predictions: %s",length(S)))
-	print(sprintf("abs error: %s",sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Yreg%*%lr_beta2)+ww3*M)))))
+	abs_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Yreg%*%lr_beta2)+ww3*M)))
+	print(sprintf("abs error: %s",abs_error))
+	print(sprintf("avg abs error: %s",abs_error/N))
 	GP_pred_error = sum(abs(S - M))
 	print(sprintf("GP abs error: %s",GP_pred_error))
 
@@ -489,6 +491,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		
 		pred_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Yreg%*%lr_beta2)+ww3*M)))
 		print(sprintf("abs error: %s",pred_error))
+		print(sprintf("avg abs error: %s",pred_error/N))
 
 		pi_pred_error = sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Yreg%*%lr_beta2)+pi3*M)))
 		print(sprintf("abs error using pi: %s",pi_pred_error))
@@ -563,7 +566,9 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 
 	print(sprintf("loglik: %s",loglik))
 	print(sprintf("num predictions: %s",length(S)))
-	print(sprintf("abs error: %s",sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Y%*%lr_beta2))))))
+	abs_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Y%*%lr_beta2))))
+	print(sprintf("abs error: %s",abs_error))
+	print(sprintf("avg abs error: %s",abs_error/N))
 
 	while ((abs(loglik-prev_loglik) > tolerance && j < em_max_iter)) {
 		print(sprintf("iter: %d",j))
@@ -662,6 +667,7 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		print(sprintf("loglik: %s",loglik))
 		pred_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Y%*%lr_beta2))))
 		print(sprintf("abs error: %s",pred_error))
+		print(sprintf("avg abs error: %s",pred_error/N))
 		pi_pred_error = sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Y%*%lr_beta2))))
 		print(sprintf("abs error using pi: %s",pi_pred_error))
 
