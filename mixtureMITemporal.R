@@ -82,7 +82,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
     # 0 for GP in RRG, 1 for RRG, 2 for RR
     mix_model_num = 1
 
-    pi3 = 0.1
+    pi3 = 1/3
     pi1 = (1-pi3)/2
     pi2 = (1-pi3)/2
     
