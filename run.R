@@ -32,7 +32,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", model_ty
 	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked_artificial_time_per_v.prt_tensor",data_prefix,missing_pcnt*100))
 
 	# # tuned_artificial_prt_tensor
-	load(sprintf("../../data/%s_norm_%smispcnt_test_marked_tuned_artificial_time_per_v_a1.prt_tensor",data_prefix,missing_pcnt*100))
+	load(sprintf("../../data/%s_norm_%smispcnt_test_marked_tuned_artificial_time_per_v_a0.5.prt_tensor",data_prefix,missing_pcnt*100))
 
 
 	# artificial experiment
@@ -101,8 +101,8 @@ model_type = "both"
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_rrg_equalpi_TregAT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 
-gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_a1_joint_rrg_sameXweight31_em30_3imp/GP_models",tp,missing_pcnt*100)
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_a1_joint_both_sameXweight31_em30_3imp",tp,missing_pcnt*100)
+gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_0.5_joint_rrg_sameXweight31_em30/GP_models",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/tuned_artificial_0.5_joint_both_sameXweight31_em30_3imp",tp,missing_pcnt*100)
 
 
 # model_type = "both"
