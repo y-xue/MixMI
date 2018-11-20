@@ -508,9 +508,10 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 
 		if (pred_error < param$abs_error) {
 			param$abs_error = pred_error
-		} else {
-			break
-		}
+		} 
+		# else {
+		# 	break
+		# }
 
 		if (loglik > param$loglik) {
 			param$loglik <- loglik
