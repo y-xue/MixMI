@@ -64,7 +64,7 @@ initialize_imp_tensor <- function(pv_tensor,m) {
   return(imp_tensor)
 }
 
-sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_type, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, ridge, printFlag, ...)
+sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_type, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, ridge, observation, printFlag, ...)
 {
     print("sampler")
     print(out_cdn)
@@ -234,7 +234,7 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
                         # if (!obs_only) {
                         #     imp_res <- impute_em_rrg(i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
                         # } else {
-                        imp_res <- impute_em_rrg_obs_only(model_type,i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge)
+                        imp_res <- impute_em_rrg_obs_only(model_type,i,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge,observation)
                         # }
 
                         if (model_type == "rrg" || model_type == "both") {
@@ -263,19 +263,19 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
                 }
             }
 
-            for (t in 1:length(pv_tensor)) {
-                imputed <- pv_tensor[[t]]
-                for (v in visit_col_sequence_list[[t]]) {    
-                    imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-                }
-                write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
-            }
+            # for (t in 1:length(pv_tensor)) {
+            #     imputed <- pv_tensor[[t]]
+            #     for (v in visit_col_sequence_list[[t]]) {    
+            #         imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+            #     }
+            #     write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
+            # }
         }
     }
     return(imp_tensor)
 }
 
-impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge=1e-5)
+impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,pt_df,ori_y,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge=1e-5,observation=FALSE)
 {
     print("impute_em_rrg_obs_only")
 
@@ -596,22 +596,24 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
 
     } else {
 
-        # # sy = ry
-        # # for (i in 1:length(sy)) {
-        # #     if (sy[i] == TRUE) {
-        # #         ts = pt_df[i,-t][r_v[i,]]
-        # #         if (sum(r_v[i,]) == 0) {
-        # #             sy[i] = FALSE
-        # #         }
-        # #     }
-        # # }
+        if (observation) {
+            sy = ry
+            for (i in 1:length(sy)) {
+                if (sy[i] == TRUE) {
+                    ts = pt_df[i,-t][r_v[i,]]
+                    if (sum(r_v[i,]) == 0) {
+                        sy[i] = FALSE
+                    }
+                }
+            }
 
-        # # T = dim(pt_df)[2]
-        # # N = sum(sy)
-        # # S = y[sy]
-        # # Z = x1[sy,]
-        # # Yreg = x2[sy,]
-        # # Ygp = pt_df[sy,]
+            T = dim(pt_df)[2]
+            N = sum(sy)
+            S = y[sy]
+            Z = x1[sy,]
+            Yreg = x2[sy,]
+            Ygp = pt_df[sy,]
+        }
 
         mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
         
@@ -625,16 +627,24 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             pi2 = source(sprintf("%s_rr.pi2",w_fn))$value
             w1 = source(sprintf("%s_rr.w1",w_fn))$value
             w2 = source(sprintf("%s_rr.w2",w_fn))$value
-            # U1 = source(sprintf("%s_rr.U1",w_fn))$value
-            # U2 = source(sprintf("%s_rr.U2",w_fn))$value
-            # S1 = source(sprintf("%s_rr.S1",w_fn))$value
-            # S2 = source(sprintf("%s_rr.S2",w_fn))$value
+            U1 = source(sprintf("%s_rr.U1",w_fn))$value
+            U2 = source(sprintf("%s_rr.U2",w_fn))$value
+            S1 = source(sprintf("%s_rr.S1",w_fn))$value
+            S2 = source(sprintf("%s_rr.S2",w_fn))$value
             ww1 = source(sprintf("%s_rr.ww1",w_fn))$value
             ww2 = source(sprintf("%s_rr.ww2",w_fn))$value
             lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
-            # lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
+            lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
             lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
-            # lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+            lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
+
+            if (observation) {
+                print("saving ww_tr")
+                wws = get_ww_rr(N,Z,Yreg,pi1,pi2,U1,U2,S1,S2)
+                ww1_tr = wws$w1; ww2_tr = wws$w2
+                dump("ww1_tr", sprintf("%s_rr.ww1_tr",w_fn))
+                dump("ww2_tr", sprintf("%s_rr.ww2_tr",w_fn))
+            }
 
             rr_param = list(pi1,pi2,w1,w2)
             names(rr_param) = c('pi1','pi2','w1','w2')
@@ -698,19 +708,28 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             w1 = source(sprintf("%s_rrg.w1",w_fn))$value
             w2 = source(sprintf("%s_rrg.w2",w_fn))$value
             w3 = source(sprintf("%s_rrg.w3",w_fn))$value
-            # U1 = source(sprintf("%s_rrg.U1",w_fn))$value
-            # U2 = source(sprintf("%s_rrg.U2",w_fn))$value
-            # U3 = source(sprintf("%s_rrg.U3",w_fn))$value
-            # S1 = source(sprintf("%s_rrg.S1",w_fn))$value
-            # S2 = source(sprintf("%s_rrg.S2",w_fn))$value
-            # S3 = source(sprintf("%s_rrg.S3",w_fn))$value
+            U1 = source(sprintf("%s_rrg.U1",w_fn))$value
+            U2 = source(sprintf("%s_rrg.U2",w_fn))$value
+            U3 = source(sprintf("%s_rrg.U3",w_fn))$value
+            S1 = source(sprintf("%s_rrg.S1",w_fn))$value
+            S2 = source(sprintf("%s_rrg.S2",w_fn))$value
+            S3 = source(sprintf("%s_rrg.S3",w_fn))$value
             ww1 = source(sprintf("%s_rrg.ww1",w_fn))$value
             ww2 = source(sprintf("%s_rrg.ww2",w_fn))$value
             ww3 = source(sprintf("%s_rrg.ww3",w_fn))$value
             lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
-            # lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
+            lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
             lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
-            # lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+            lr_sigma2 = source(sprintf("%s_rrg.lr_sigma2",w_fn))$value
+
+            if (observation) {
+                print("saving ww_tr")
+                wws = get_ww(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
+                ww1_tr = wws$w1; ww2_tr = wws$w2; ww3_tr = wws$w3
+                dump("ww1_tr", sprintf("%s_rrg.ww1_tr",w_fn))
+                dump("ww2_tr", sprintf("%s_rrg.ww2_tr",w_fn))
+                dump("ww3_tr", sprintf("%s_rrg.ww3_tr",w_fn))
+            }
 
             rrg_param <- list(pi1,pi2,pi3,w1,w2,w3)
             names(rrg_param) <- c('pi1','pi2','pi3','w1','w2','w3')
@@ -861,6 +880,7 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
     imp_tensor = NA,
     printFlag = TRUE,
     seed = NA,
+    observation = FALSE,
     ...)
 {
     set.seed(seed)
@@ -904,7 +924,7 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
     sink()
 
     if (!rg) {
-        imp_tensor = sampler(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_type, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, ridge, printFlag, ...)
+        imp_tensor = sampler(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_type, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, ridge, observation, printFlag, ...)
     } else {
         imp_tensor = sampler_rg(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, printFlag, ...)
     }
