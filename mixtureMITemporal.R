@@ -263,13 +263,13 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
                 }
             }
 
-            # for (t in 1:length(pv_tensor)) {
-            #     imputed <- pv_tensor[[t]]
-            #     for (v in visit_col_sequence_list[[t]]) {    
-            #         imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-            #     }
-            #     write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
-            # }
+            for (t in 1:length(pv_tensor)) {
+                imputed <- pv_tensor[[t]]
+                for (v in visit_col_sequence_list[[t]]) {    
+                    imputed[!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+                }
+                write.csv(imputed, file=sprintf("%s/imp_%d_attime_%s_miceiter_%d.csv",out_cdn,i,t,k), row.names=FALSE)
+            }
         }
     }
     return(imp_tensor)
@@ -929,14 +929,14 @@ mixtureMITemporal <- function(pv_tensor, prt_m=NULL,
         imp_tensor = sampler_rg(pv_tensor, prt_m, ori_tensor, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, printFlag, ...)
     }
 
-    # for (t in 1:length(pv_tensor)) {
-    #     for (i in 1:m) {
-    #         for (v in visit_col_sequence_list[[t]]) {   
-    #             pv_tensor[[t]][!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
-    #             write.csv(pv_tensor[[t]], file=sprintf("%s/imp_%d_attime_%s.csv",out_cdn,i,t), row.names=FALSE)
-    #         }
-    #     }
-    # }
+    for (t in 1:length(pv_tensor)) {
+        for (i in 1:m) {
+            for (v in visit_col_sequence_list[[t]]) {   
+                pv_tensor[[t]][!r_list[[t]][,v],v] <- imp_tensor[[t]][[v]][,i]
+                write.csv(pv_tensor[[t]], file=sprintf("%s/imp_%d_attime_%s.csv",out_cdn,i,t), row.names=FALSE)
+            }
+        }
+    }
 
     # return(pv_tensor)
 }

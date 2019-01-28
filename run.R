@@ -5,7 +5,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", model_ty
 	library(parallel)
 	library(mvtnorm)
 
-	em_max_iter = 30
+	em_max_iter = 10
 	tolerance = 1
 	step = 0.02
 	gd_miter = 10
@@ -94,9 +94,11 @@ model_type = "both"
 # gpmodel_dir = ""
 # run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type)
 
-
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_both_sameXweight31_em30_pi3_0.1_3imp",tp,missing_pcnt*100)
+out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_both_sameXweight31_em10_pi3_0.1_3imp_overfittingEM",tp,missing_pcnt*100)
 gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+
+# out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_both_sameXweight31_em30_pi3_0.1_3imp",tp,missing_pcnt*100)
+# gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
 
 # out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_joint_rrg_sameXweight_em30",tp,missing_pcnt*100)
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/artificial_rrg_equalpi_TregAT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
@@ -109,7 +111,7 @@ gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_nor
 # out_cdn = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_sameXweight31_em30_pi3_0.1_3imp",tp,missing_pcnt*100)
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_sameXweight31_em30_pi3_0.1_3imp/GP_models",tp,missing_pcnt*100)
 
-run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type,obs_only=TRUE,observation=TRUE)
+run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type,obs_only=TRUE,observation=FALSE)
 # for (ridge in c(1e-4, 1e-3, 0.01, 0.1, 1, 10)) {
 # 	out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_rr_sameXweight31_em30_one_ridge_%s",tp,missing_pcnt*100,ridge)
 # 	run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,ridge=ridge)

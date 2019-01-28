@@ -505,10 +505,11 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		} else {
 			param$mix_model_num = 1
 		}
-
-		if (pred_error < param$abs_error) {
-			param$abs_error = pred_error
-		} 
+		
+		param$abs_error = pred_error
+		# if (pred_error < param$abs_error) {
+		# 	param$abs_error = pred_error
+		# } 
 		# else {
 		# 	break
 		# }
@@ -687,12 +688,12 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		# 		param$lr_sigma2 <- lr_sigma2
 		# 	}
 		# }
-
-		if (pred_error < param$abs_error) {
-			param$abs_error = pred_error
-		} else {
-			break
-		}
+		param$abs_error = pred_error
+		# if (pred_error < param$abs_error) {
+		# 	param$abs_error = pred_error
+		# } else {
+		# 	break
+		# }
 
 		if (loglik > param$loglik) {
 			param$loglik <- loglik
