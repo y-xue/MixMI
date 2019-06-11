@@ -20,7 +20,7 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", model_ty
 	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked.prt_m",data_prefix,missing_pcnt*100))
 	
 	# prt_m
-	load(sprintf("../../data/%s_tr_norm.prt_m",data_prefix,missing_pcnt*100))
+	load(sprintf("../../data/%s_tr.prt_m",data_prefix,missing_pcnt*100))
 	
 	# norm_marked_pv_tensor
 	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked.pv_tensor",data_prefix,missing_pcnt*100))
