@@ -69,6 +69,8 @@ sampler <- function(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, mod
         return(imp_tensor)
     }
 
+    prt_m_norm = t(apply(prt_m,1,function(row) (row-min(row))/(max(row)-min(row))))
+
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
         # ridge = ridge_vec[k]
@@ -158,7 +160,7 @@ sampler <- function(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, mod
 
                     if (sum(!ry) > 0) {
 
-                        imp_res <- impute_em_rrg_obs_only(model_type,i,num_time_point,v,y,ry,x1,x2,pt_df,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge,observation)
+                        imp_res <- impute_em_rrg_obs_only(model_type,i,num_time_point,v,y,ry,x1,x2,pt_df,xtr_vec,xte_vec,t,r_v,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge,observation)
                         imp_tensor[[t]][[v]][,i] = imp_res$pred
                     }
 
@@ -180,7 +182,7 @@ sampler <- function(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, mod
 
 }
 
-impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,pt_df,xtr_vec,xte_vec,t,r_v,mix_model_num,mix_model_1_param,mix_model_2_param,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge=1e-5,observation=FALSE)
+impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,pt_df,xtr_vec,xte_vec,t,r_v,l,em_max_iter,tolerance,step,gd_miter,gd_precision,w_fn,ridge=1e-5,observation=FALSE)
 {
     print("impute_em_rrg_obs_only")
 
@@ -210,13 +212,10 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         U2 = source(sprintf("%s_rr.U2",w_fn))$value
         S1 = source(sprintf("%s_rr.S1",w_fn))$value
         S2 = source(sprintf("%s_rr.S2",w_fn))$value
-        ww1 = source(sprintf("%s_rr.ww1",w_fn))$value
-        ww2 = source(sprintf("%s_rr.ww2",w_fn))$value
         lr_beta1 = source(sprintf("%s_rr.lr_beta1",w_fn))$value
         lr_sigma1 = source(sprintf("%s_rr.lr_sigma1",w_fn))$value
         lr_beta2 = source(sprintf("%s_rr.lr_beta2",w_fn))$value
         lr_sigma2 = source(sprintf("%s_rr.lr_sigma2",w_fn))$value
-
 
         rr_param = list(pi1,pi2,w1,w2)
         names(rr_param) = c('pi1','pi2','w1','w2')
@@ -224,6 +223,9 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         if (mix_model_num == 2) {
             rr_lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             rr_lr_prediction2 = x2[!ry,  ] %*% lr_beta2
+
+            wws = get_ww_rr(Nstar,x1[!ry,],x2[!ry,],pi1,pi2,U1,U2,S1,S2)
+            ww1 = wws$w1; ww2 = wws$w2
    
             prediction = ww1 * rr_lr_prediction1 + ww2 * rr_lr_prediction2
         }
@@ -246,9 +248,6 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         S1 = source(sprintf("%s_rrg.S1",w_fn))$value
         S2 = source(sprintf("%s_rrg.S2",w_fn))$value
         S3 = source(sprintf("%s_rrg.S3",w_fn))$value
-        ww1 = source(sprintf("%s_rrg.ww1",w_fn))$value
-        ww2 = source(sprintf("%s_rrg.ww2",w_fn))$value
-        ww3 = source(sprintf("%s_rrg.ww3",w_fn))$value
         lr_beta1 = source(sprintf("%s_rrg.lr_beta1",w_fn))$value
         lr_sigma1 = source(sprintf("%s_rrg.lr_sigma1",w_fn))$value
         lr_beta2 = source(sprintf("%s_rrg.lr_beta2",w_fn))$value
@@ -294,6 +293,8 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
             # prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
             
             if (mix_model_num == 1) {
+                wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
+                ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
                 # RRG
                 # if (t == 1) {
                 #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
