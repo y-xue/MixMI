@@ -130,7 +130,7 @@ gpmodel_dir = ""
 # }
 
 
-impute_test <- function(out_cdn,data_prefix,model_type="both",obs_only=TRUE,ridge=1e-5) {
+impute_test <- function(out_cdn,data_prefix,gpmodel_dir="",model_type="both",obs_only=TRUE,ridge=1e-5) {
 	source('mixtureMITemporalConfig.R')
 	source('mixtureMITemporalImputeTest.R')
 	library(parallel)
@@ -161,4 +161,6 @@ impute_test <- function(out_cdn,data_prefix,model_type="both",obs_only=TRUE,ridg
 }
 
 out_cdn = '../../impute_test'
-impute_test(out_cdn,data_prefix,model_type=model_type)
+gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+
+impute_test(out_cdn,data_prefix,gpmodel_dir=gpmodel_dir,model_type=model_type)
