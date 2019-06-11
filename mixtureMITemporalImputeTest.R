@@ -1,3 +1,8 @@
+source('em.R')
+source('regression.R')
+source('GP.R')
+library(parallel)
+
 initial_impute_sample <- function(y, tr_ry, ry, x=NULL, ...)
 # initial_impute_sample
 #
