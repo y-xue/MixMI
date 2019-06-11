@@ -132,7 +132,7 @@ gpmodel_dir = ""
 
 impute_test <- function(out_cdn,data_prefix,model_type="both",obs_only=TRUE,ridge=1e-5) {
 	source('mixtureMITemporalConfig.R')
-	source('mixtureMITemporal.R')
+	source('mixtureMITemporalImputeTest.R')
 	library(parallel)
 	library(mvtnorm)
 
