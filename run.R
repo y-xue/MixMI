@@ -17,16 +17,19 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", model_ty
 	# MIMIC-III
 
 	# norm_marked_prt_m
-	load(sprintf("../../data/%s_norm_%smispcnt_test_marked.prt_m",data_prefix,missing_pcnt*100))
+	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked.prt_m",data_prefix,missing_pcnt*100))
+	
+	# prt_m
+	load(sprintf("../../data/%s_tr_norm.prt_m",data_prefix,missing_pcnt*100))
 	
 	# norm_marked_pv_tensor
-	load(sprintf("../../data/%s_norm_%smispcnt_test_marked.pv_tensor",data_prefix,missing_pcnt*100))
+	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked.pv_tensor",data_prefix,missing_pcnt*100))
 	
 	# file_list
 	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked.file_list",data_prefix,missing_pcnt*100))
 	
 	# ori_norm_pv_tensor
-	load(sprintf("../../data/%s_norm.pv_tensor",data_prefix))
+	load(sprintf("../../data/%s_tr_norm.pv_tensor",data_prefix))
 
 	# # artificial_prt_tensor
 	# load(sprintf("../../data/%s_norm_%smispcnt_test_marked_artificial_time_per_v.prt_tensor",data_prefix,missing_pcnt*100))
@@ -39,7 +42,10 @@ run <- function(out_cdn, data_prefix, tp, missing_pcnt, gpmodel_dir="", model_ty
 	# mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, artificial_prt_tensor=artificial_prt_tensor, ori_tensor=ori_norm_pv_tensor, model_type=model_type, m = 3, exclude = exclude, maxit = 3, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
 	
 	# real data experiment
-	mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, ori_tensor=ori_norm_pv_tensor, model_type=model_type, m = 3, exclude = exclude, maxit = 2, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, ridge = ridge, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed, observation=observation)
+	# mixtureMITemporal(norm_marked_pv_tensor, prt_m=norm_marked_prt_m, ori_tensor=ori_norm_pv_tensor, model_type=model_type, m = 3, exclude = exclude, maxit = 2, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, ridge = ridge, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed, observation=observation)
+
+	# impute original data
+	mixtureMITemporal(ori_norm_pv_tensor, prt_m=prt_m, ori_tensor=ori_norm_pv_tensor, model_type=model_type, m = 3, exclude = exclude, maxit = 2, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, ridge = ridge, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed, observation=observation)
 
 
 	# # EDW
@@ -111,8 +117,11 @@ model_type = "both"
 # out_cdn = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_sameXweight31_em30_pi3_0.1_3imp",tp,missing_pcnt*100)
 # gpmodel_dir = sprintf("../../non-equidistant_experiments/edw_%stp_1measure_norm_%smispcnt/real/joint_both_sameXweight31_em30_pi3_0.1_3imp/GP_models",tp,missing_pcnt*100)
 
-out_cdn = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/joint_both_sameXweight31_em30_pi3_0.33_3imp",tp,missing_pcnt*100)
-gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+# out_cdn = sprintf("../../impute_original_data_joint_both_sameXweight31_em30_pi3_0.33_3imp",tp,missing_pcnt*100)
+# gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+
+out_cdn = "../../impute_original_data_joint_both_sameXweight31_em30_pi3_0.1_3imp"
+gpmodel_dir = ""
 
 run(out_cdn,data_prefix,tp,missing_pcnt,gpmodel_dir=gpmodel_dir,model_type=model_type,obs_only=TRUE,observation=FALSE)
 # for (ridge in c(1e-4, 1e-3, 0.01, 0.1, 1, 10)) {
