@@ -379,7 +379,7 @@ mixtureMITemporalImputeTest <- function(pv_tensor,
     print(sprintf("gd_precision = %s",gd_precision))
     sink()
 
-    imp_tensor = sampler(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, ori_tensor, model_type, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, ridge, observation, printFlag, ...)
+    imp_tensor = sampler(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, model_type, out_cdn, gpmodel_dir, m, maxit, obs_only, imp_tensor, r_list, r_vlist, predictor_matrix_list, visit_col_sequence_list, em_max_iter, tolerance, step, gd_miter, gd_precision, ridge, observation, printFlag, ...)
 
     for (t in 1:length(pv_tensor)) {
         for (i in 1:m) {
