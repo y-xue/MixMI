@@ -130,7 +130,7 @@ gpmodel_dir = ""
 # }
 
 
-impute_test <- function(out_cdn,data_prefix,gpmodel_dir="",model_type="both",obs_only=TRUE,ridge=1e-5) {
+impute_test <- function(out_cdn,tr_imputed_dir,data_prefix,gpmodel_dir="",model_type="both",obs_only=TRUE,ridge=1e-5) {
 	source('mixtureMITemporalConfig.R')
 	source('mixtureMITemporalImputeTest.R')
 	library(parallel)
@@ -151,8 +151,6 @@ impute_test <- function(out_cdn,data_prefix,gpmodel_dir="",model_type="both",obs
 	load(sprintf('../../data/%s_tr_norm.pv_tensor',data_prefix))
 	tr_pv_tensor = ori_norm_pv_tensor
 
-	tr_imputed_dir = '../../non-equidistant_experiments/mimic_11tp_1measure_norm_20mispcnt_test/real/joint_both_sameXweight31_em30_pi3_0.1_3imp'
-
 	load(sprintf("../../data/%s_te.prt_m",data_prefix))
 
 	mixtureMITemporalImputeTest(pv_tensor, tr_pv_tensor, tr_imputed_dir, prt_m=prt_m,model_type=model_type, m = 3, exclude = exclude, maxit = 2, obs_only = obs_only, em_max_iter = em_max_iter, tolerance = tolerance, step = step, gd_miter = gd_miter, gd_precision = gd_precision, ridge = ridge, out_cdn=out_cdn,  gpmodel_dir = gpmodel_dir, imp_tensor=NA, seed=seed)
@@ -160,7 +158,15 @@ impute_test <- function(out_cdn,data_prefix,gpmodel_dir="",model_type="both",obs
 
 }
 
-out_cdn = '../../impute_test'
-gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+# out_cdn = '../../impute_test'
+# gpmodel_dir = sprintf("../../non-equidistant_experiments/mimic_%stp_1measure_norm_%smispcnt_test/real/rrg_equalpi_TregRT_GPObsOnly_gd30_em10/GP_models",tp,missing_pcnt*100)
+# tr_imputed_dir = '../../non-equidistant_experiments/mimic_11tp_1measure_norm_20mispcnt_test/real/joint_both_sameXweight31_em30_pi3_0.1_3imp'
 
-impute_test(out_cdn,data_prefix,gpmodel_dir=gpmodel_dir,model_type=model_type)
+# impute_test(out_cdn,data_prefix,gpmodel_dir=gpmodel_dir,model_type=model_type)
+
+
+out_cdn = '../../impute_test'
+gpmodel_dir = '../../impute_original_data_joint_both_sameXweight31_em30_pi3_0.1_3imp/GP_models'
+tr_imputed_dir = '../../impute_original_data_joint_both_sameXweight31_em30_pi3_0.1_3imp'
+
+impute_test(out_cdn,tr_imputed_dir,data_prefix,gpmodel_dir=gpmodel_dir,model_type=model_type)
