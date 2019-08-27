@@ -76,24 +76,15 @@ get_w <- function(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,
 		
 		if (length(ry) == 0 || length(unique(ry)) == 1) {
 			if (length(ry) == 0 || unique(ry) != S[i]) {
-				# preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-				# preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
 				preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
 				preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
-				
-				pGP = 1e-8
+				pGP = epsilon
 			} else {
-				# preg1 = 1e-8
-				# preg2 = 1e-8
-				# pGP = 1-preg1-preg2
 				preg1 = pi1
 				preg2 = pi2
 				pGP = pi3
 			}
 		} else {
-			# preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(Z[i,],U1,S1)
-			# preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(Yreg[i,],U2,S2)
-			# pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(Ygp[i,-t],U3,S3)
 			preg1 <- pi1 * dnorm(S[i],Z[i,]%*%lr_beta1,lr_sigma1) * dmvnorm(X[i,],U1,S1)
 			preg2 <- pi2 * dnorm(S[i],Yreg[i,]%*%lr_beta2,lr_sigma2) * dmvnorm(X[i,],U2,S2)
 			pGP <- pi3 * dnorm(S[i],M[i],sqrt(K[i])) * dmvnorm(X[i,],U3,S3)
@@ -196,9 +187,6 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 		preg1 <- pi1 * dmvnorm(X[i,],U1,S1)
 		preg2 <- pi2 * dmvnorm(X[i,],U2,S2)
 		pGP   <- pi3 * dmvnorm(X[i,],U3,S3)
-		# preg1 <- pi1 * dmvnorm(Z[i,],U1,S1)
-		# preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
-		# pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
 
 		if (round(preg1 + preg2 + pGP, 8) == 0) {
 			preg1 = pi1
@@ -248,58 +236,6 @@ get_ww <- function(N,t,Ygp,Z,Yreg,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,epsilon=1e-8) {
 	res = list(w1,w2,w3)
 	names(res) = c("w1","w2","w3")
 
-	# tw1 = rep(0,N)
-	# tw2=tw1; tw3=tw1
-	# for (i in 1:N) {
-	# 	preg1 <- pi1 * dmvnorm(X[i,],U1,S1)
-	# 	preg2 <- pi2 * dmvnorm(X[i,],U2,S2)
-	# 	pGP   <- pi3 * dmvnorm(X[i,],U3,S3)
-	# 	# preg1 <- pi1 * dmvnorm(Z[i,],U1,S1)
-	# 	# preg2 <- pi2 * dmvnorm(Yreg[i,],U2,S2)
-	# 	# pGP <- pi3 * dmvnorm(Ygp[i,-t],U3,S3)
-
-	# 	if (round(preg1 + preg2 + pGP, 8) == 0) {
-	# 		preg1 = pi1
-	# 		preg2 = pi2
-	# 		pGP = pi3
-	# 	}
-
-	# 	tw1[i] <-  preg1 / (preg1 + preg2 + pGP)
-	# 	tw2[i] <- preg2 / (preg1 + preg2 + pGP)
-	# 	tw3[i] <- pGP / (preg1 + preg2 + pGP)
-
-	# 	if (tw1[i] < epsilon) {
-	# 		if (tw2[i] < tw3[i]) {
-	# 			tw3[i] = tw3[i] - (epsilon-tw1[i])
-	# 		} else {
-	# 			tw2[i] = tw2[i] - (epsilon-tw1[i])
-	# 		}
-	# 		tw1[i] = epsilon
-	# 	}
-
-	# 	if (tw2[i] < epsilon) {
-	# 		if (tw1[i] < tw3[i]) {
-	# 			tw3[i] = tw3[i] - (epsilon-tw2[i])
-	# 		} else {
-	# 			tw1[i] = tw1[i] - (epsilon-tw2[i])
-	# 		}
-	# 		tw2[i] = epsilon
-	# 	}
-
-	# 	if (tw3[i] < epsilon) {
-	# 		if (tw1[i] < tw2[i]) {
-	# 			tw2[i] = tw2[i] - (epsilon-tw3[i])
-	# 		} else {
-	# 			tw1[i] = tw1[i] - (epsilon-tw3[i])
-	# 		}
-	# 		tw3[i] = epsilon
-	# 	}
-	# }
-
-	# print(sum(w1-tw1))
-	# print(sum(w2-tw2))
-	# print(sum(w3-tw3))
-
 	return(res)
 }
 
@@ -343,12 +279,10 @@ get_ww_rr <- function(N,Z,Y,pi1,pi2,U1,U2,S1,S2,epsilon=1e-8) {
 	return(res)
 }
 
-em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,em_max_iter,tolerance,step,gd_miter,gd_precision,ridge=1e-5)
+em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_model_num,w1,w2,w3,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,l,em_max_iter,tolerance,step,gd_miter,gd_precision,ridge=1e-5,epsilon=1e-8)
 {
 	print("em_rrg_obs_only")
 	print(sprintf("ridge: %s", ridge))
-
-	epsilon = 1e-8
 
 	N <- length(S)
 
@@ -364,20 +298,13 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	sig2vec <- rep(0,N)
 
 	Rinv_lst = mclapply(1:N, function(i) Rinverse(l,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-	# M = unlist(mclapply(1:N,function (i) yhat(l,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-	# sig2vec = unlist(mclapply(1:N, function(i) sig2(l,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-	# K = unlist(mclapply(1:N, function(i) s2(l,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-
+	
 	gp_pred_lst = mclapply(1:N, function(i) simple_GP_pred(l,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]), mc.cores=num_cores)
 	M = sapply(gp_pred_lst, function(x) {x$yhat})
 	K = sapply(gp_pred_lst, function(x) {x$mse})
 
 	X = cbind(Z,Yreg)
 	loglik = sum(unlist(mclapply(1:N, function(i) L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i]), mc.cores=num_cores)))
-	# for (i in 1:N) {
-	# 	print(i)
-	# 	L(pi1,pi2,pi3,w1[i],w2[i],w3[i],U1,U2,U3,S1,S2,S3,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Yreg[i,],lr_beta2,lr_sigma2,Ygp[i,-t],M[i],K[i])
-	# }
 
 	prev_loglik <- loglik + tolerance + 1
 	param$loglik = loglik
@@ -399,8 +326,6 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	while ((abs(loglik-prev_loglik) > tolerance && j < em_max_iter)) {
 		print(sprintf("iter: %d",j))
 		# E-step
-		# 0.4s
-		# ptm <- proc.time()
 		ws = get_w(N,t,S,Ygp,r_v_tr,Z,Yreg,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,M,K,pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
 		w1 = ws$w1; w2 = ws$w2; w3 = ws$w3
 
@@ -433,21 +358,6 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
 		S3 = Reduce('+',lapply(1:N,function(ri) {w3[ri]*(X[ri,]-U3)%*%t(X[ri,]-U3)})) / sum(w3)
 
-		# U1 = apply(w1*Z,2,sum)/sum(w1)
-		# U2 = apply(w2*Yreg,2,sum)/sum(w2)
-		# U3 = apply(w3*Ygp[,-t],2,sum)/sum(w3)
-
-		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
-		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Yreg[ri,]-U2)%*%t(Yreg[ri,]-U2)})) / sum(w2)
-		# S3 = Reduce('+',lapply(1:N,function(ri) {w3[ri]*(Ygp[ri,-t]-U3)%*%t(Ygp[ri,-t]-U3)})) / sum(w3)
-
-		# estimate regression parameters
-		# if (t <= 2 || t >= 10) {
-		# 	ridge <- 1e-5 # ridge <- 0.00001
-		# } else {
-		# 	ridge <- 10
-		# }
-
 		sw = sqrt(w1)
 		swZ = sw * Z
 		swS = sw * S
@@ -458,7 +368,6 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		lr_beta1 <- v %*% t(swZ) %*% swS
 		residuals <- swS - swZ %*% lr_beta1
 		lr_sigma1 <- sqrt((sum(residuals^2))/sum(w1))
-		# print(proc.time() - ptm)
 
 		sw2 = sqrt(w2)
 		swY = sw2 * Yreg
@@ -474,10 +383,7 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 		ll <- Adam_one_obs_only(w3,pi3,U3,S3,X,Ygp,S,xte_vec_tr,xtr_vec_tr,Rinv_lst,t,r_v_tr,ll,step,gd_precision,gd_miter,j)
 
 		Rinv_lst = mclapply(1:N, function(i) Rinverse(ll,xtr_vec_tr[i,][r_v_tr[i,]]), mc.cores=num_cores)
-		# M = unlist(mclapply(1:N,function (i) yhat(ll,xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-		# sig2vec = unlist(mclapply(1:N, function(i) sig2(ll,Ygp[i,-t][r_v_tr[i,]],xtr_vec_tr[i,][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-		# K = unlist(mclapply(1:N, function(i) s2(ll,sig2vec[i],xte_vec_tr[i],xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],Rinv=Rinv_lst[[i]]), mc.cores=num_cores))
-
+		
 		gp_pred_lst = mclapply(1:N, function(i) simple_GP_pred(ll,xtr_vec_tr[i,][r_v_tr[i,]],Ygp[i,-t][r_v_tr[i,]],xte_vec_tr[i]), mc.cores=num_cores)
 		M = sapply(gp_pred_lst, function(x) {x$yhat})
 		K = sapply(gp_pred_lst, function(x) {x$mse})
@@ -506,7 +412,6 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 			param$mix_model_num = 1
 		}
 		
-		# param$abs_error = pred_error
 		if (pred_error < param$abs_error) {
 			param$abs_error = pred_error
 		} 
@@ -541,11 +446,9 @@ em_rrg_obs_only <- function(S,Z,Yreg,Ygp,xte_vec_tr,xtr_vec_tr,t,r_v_tr,mix_mode
 	return(param)
 }
 
-em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,em_max_iter,tolerance,ridge=1e-5) {
+em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,em_max_iter,tolerance,ridge=1e-5,epsilon=1e-8) {
 	print("em_double_reg")
 	print(sprintf("ridge: %s", ridge))
-
-	epsilon = 1e-8
 
 	N = length(S)
 	# initialization
@@ -555,7 +458,6 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 	print(sprintf("prev pi1: %s",pi1))
 	print(sprintf("prev pi2: %s",pi2))
 
-	# 1s
 	X = cbind(Z,Y)
 	loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],U1,U2,S1,S2,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Y[i,],lr_beta2,lr_sigma2), mc.cores=num_cores)))
 	prev_loglik = loglik + tolerance + 1
@@ -575,15 +477,8 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 	while ((abs(loglik-prev_loglik) > tolerance && j < em_max_iter)) {
 		print(sprintf("iter: %d",j))
 		# E-step
-		# 0.4s
-		# ptm <- proc.time()
 		ws = get_w_rr(N,S,Z,Y,lr_beta1,lr_sigma1,lr_beta2,lr_sigma2,pi1,pi2,U1,U2,S1,S2)
 		w1 = ws$w1; w2 = ws$w2
-
-		# print(mean(w1))
-		# print(mean(w2))
-		# print(w1[1:5])
-		# print(w2[1:5])
 
 		# M-step
 		pi1 <- (sum(w1)) / N
@@ -600,54 +495,24 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		}
 
 		# estimate U, S
-		# U1 = apply(w1*X,2,sum)/sum(w1)
-		# U2 = apply(w2*X,2,sum)/sum(w2)
-		# U1[(dim(Z)[2]+1):dim(X)[2]] = 0
-		# U2[1:dim(Z)[2]] = 0
 
-		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
-		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
-		
 		U1 = apply(w1*X,2,sum)/sum(w1)
-		# U1 = apply(w1*X,2,sum)/(sum(w1)+2*ridge) # ridge regularization
 		U2 = apply(w2*X,2,sum)/sum(w2)
-		# U2 = apply(w2*X,2,sum)/(sum(w2)+2*ridge) # ridge regularization
 		
 		S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / sum(w1)
-		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(X[ri,]-U1)%*%t(X[ri,]-U1)})) / (sum(w1)+4*ridge) # ridge regularization
 		S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / sum(w2)
-		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(X[ri,]-U2)%*%t(X[ri,]-U2)})) / (sum(w2)+4*ridge) # ridge regularization
-
-		# S2 = S1
-
-		# U1 = apply(w1*Z,2,sum)/sum(w1)
-		# U2 = apply(w2*Y,2,sum)/sum(w2)
-
-		# # print(U1)
-		# # print(U2)
-
-		# S1 = Reduce('+',lapply(1:N,function(ri) {w1[ri]*(Z[ri,]-U1)%*%t(Z[ri,]-U1)})) / sum(w1)
-		# S2 = Reduce('+',lapply(1:N,function(ri) {w2[ri]*(Y[ri,]-U2)%*%t(Y[ri,]-U2)})) / sum(w2)
-
-		# # print(S1)
-		# # print(S2)
-
-		# 0.1
-		# ptm <- proc.time()
+		
 		sw1 = sqrt(w1)
 		swZ = sw1 * Z
 		swS = sw1 * S
 		ztwz <- t(swZ) %*% swZ
 		pen <- ridge * diag(ztwz)
-		# or pen <- ridge * diag(N) ?
 		if (length(pen)==1) pen <- matrix(pen)
 		v <- solve(ztwz + diag(pen))
 		lr_beta1 <- v %*% t(swZ) %*% swS
 		residuals <- swS - swZ %*% lr_beta1
 		lr_sigma1 <- sqrt((sum(residuals^2))/sum(w1))
-		# print(proc.time() - ptm)
 
-		# ptm <- proc.time()
 		sw2 = sqrt(w2)
 		swY = sw2 * Y
 		swS = sw2 * S
@@ -663,8 +528,6 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
         ww1 = wws$w1; ww2 = wws$w2
 
 		prev_loglik <- loglik
-		# print(prev_loglik)
-		# loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],S[i],Z[i,],Y[i,],lr_beta1,lr_sigma1,lr_beta2,lr_sigma2), mc.cores=num_cores)))
 		loglik = sum(unlist(mclapply(1:N, function(i) L_rr(pi1,pi2,w1[i],w2[i],U1,U2,S1,S2,X[i,],S[i],Z[i,],lr_beta1,lr_sigma1,Y[i,],lr_beta2,lr_sigma2), mc.cores=num_cores)))
 		print(sprintf("loglik: %s",loglik))
 		pred_error = sum(abs(S - (ww1*(Z%*%lr_beta1)+ww2*(Y%*%lr_beta2))))
@@ -673,22 +536,6 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 		pi_pred_error = sum(abs(S - (pi1*(Z%*%lr_beta1)+pi2*(Y%*%lr_beta2))))
 		print(sprintf("abs error using pi: %s",pi_pred_error))
 
-		# if (pred_error < param$abs_error) {
-		# 	param$abs_error = pred_error
-
-		# 	if (loglik > param$loglik) {
-		# 		param$loglik <- loglik
-		# 		param$w1 <- w1
-		# 		param$w2 <- w2
-		# 		param$pi1 <- pi1
-		# 		param$pi2 <- pi2
-		# 		param$lr_beta1 <- lr_beta1
-		# 		param$lr_sigma1 <- lr_sigma1
-		# 		param$lr_beta2 <- lr_beta2
-		# 		param$lr_sigma2 <- lr_sigma2
-		# 	}
-		# }
-		# param$abs_error = pred_error
 		if (pred_error < param$abs_error) {
 			param$abs_error = pred_error
 		} else {
@@ -710,8 +557,6 @@ em_double_reg <- function(S,Z,Y,T,t,w1,w2,pi1,pi2,U1,U2,S1,S2,lr_beta1,lr_sigma1
 			param$lr_beta2 <- lr_beta2
 			param$lr_sigma2 <- lr_sigma2
 		}
-
-		
 
 		j = j + 1
 	}

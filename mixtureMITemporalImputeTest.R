@@ -1,13 +1,12 @@
+# Impute missing values for examples in test set
+# by the imputation model trained on training set
+
 source('em.R')
 source('regression.R')
 source('GP.R')
 library(parallel)
 
 initial_impute_sample <- function(y, tr_ry, ry, x=NULL, ...)
-# initial_impute_sample
-#
-# Generates random sample from the observed y's
-#
 {   
     return(sample(y[tr_ry], size=sum(!ry), replace=TRUE))
 }
@@ -18,29 +17,25 @@ initialize_imp <- function(data, tr_data, m, visit_col_sequence, r, tr_r, prev_d
   nmis <- apply(is.na(data),2,sum)
 
   if(m > 0) {
-    
-    ## Initializes the imputed values
     for(j in visit_col_sequence) {
       imp[[j]] <- as.data.frame(matrix(NA, nrow = sum(!r[,j]), ncol = m))
       dimnames(imp[[j]]) <- list(row.names(data)[r[,j] == FALSE], 1:m)
       ry <- r[,j]
-      # if (method[j]!="") {     # for incomplete variables that are imputed
+      
       for(i in 1:m) {
         if (nmis[j]<nrow(data)) {
           if (is.data.frame(prev_data)) {
-            # print(prev_data)
-            # print(prev_data[[j]][!ry])
+
             imp[[j]][,i] <- prev_data[[j]][!ry]
           }
           else {
-            ## if (is.passive(method[j])) p$data[ry,j] <- data[ry,j] <- model.frame(method[j],data[ry,])
             imp[[j]][,i] <- initial_impute_sample(tr_data[,j], tr_r[,j], ry)
           }
         }
         else imp[[j]][,i] <- rnorm(nrow(data))
         
       }
-      # }
+
     }
   }
 
@@ -78,7 +73,6 @@ sampler <- function(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, mod
 
     for (k in 1:maxit) {
         print(sprintf("iter: %s",k))
-        # ridge = ridge_vec[k]
         for (i in 1:m) {
             print(sprintf("imp: %s",i))
 
@@ -144,11 +138,7 @@ sampler <- function(pv_tensor, tr_imputed_dir, prt_m, artificial_prt_tensor, mod
                         GPmodel_fn = sprintf("%s/val%s_tp%s",gpmodel_dir,v,t)
                         if (!file.exists(GPmodel_fn)) {
                             print("fitting GPmodel")
-                            # if (!obs_only) {
-                            #     GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,],pt_df[pt,-t],pt),mc.cores=num_cores)
-                            # } else {
                             GPmodel_vec = mclapply(1:num_pt, function(pt) fit_gp(xtr_vec[pt,][r_v[pt,]],pt_df[pt,-t][r_v[pt,]]),mc.cores=num_cores)
-                            # }
                             dump("GPmodel_vec",GPmodel_fn)
                         } else {
                             GPmodel_vec = source(GPmodel_fn)$value
@@ -203,10 +193,7 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
 
     mix_model_num = source(sprintf("%s.mix_model_num",w_fn))$value
         
-    # if (mix_model_num == 2) {
     if (model_type == "rr" || model_type == "both") {
-        # rr
-
         print("loading rr EM params")
 
         pi1 = source(sprintf("%s_rr.pi1",w_fn))$value
@@ -261,19 +248,6 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
         rrg_param <- list(pi1,pi2,pi3,w1,w2,w3)
         names(rrg_param) <- c('pi1','pi2','pi3','w1','w2','w3')
 
-        # lr_prediction1 = x1[!ry,  ] %*% lr_beta1
-        # lr_prediction2 = x2[!ry,  ] %*% lr_beta2
-
-        # Ystar = pt_df[!ry,]
-        
-        # xtr_vec_star = xtr_vec[!ry,]
-        # xte_vec_star = xte_vec[!ry]
-        # r_v_star = r_v[!ry,]
-
-        # if (Nstar == 1) {
-        #     Ystar = t(as.matrix(Ystar))
-        # }
-
         if (mix_model_num != 2) {
             lr_prediction1 = x1[!ry,  ] %*% lr_beta1
             lr_prediction2 = x2[!ry,  ] %*% lr_beta2
@@ -288,26 +262,14 @@ impute_em_rrg_obs_only <- function(model_type,impi,num_time_point,v,y,ry,x1,x2,p
                 Ystar = t(as.matrix(Ystar))
             }
 
-            # GPprediction_res = list()
-            # for (i in 1:Nstar) {
-            #     GPprediction_res[[i]] = gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i])
-            # }
             GPprediction_res = mclapply(1:Nstar, function(i) gp_predict_one_rt(ll,xtr_vec_star[i,][r_v_star[i,]],Ystar[i,-t][r_v_star[i,]],xte_vec_star[i]), mc.cores=num_cores)
             gp_prediction = sapply(GPprediction_res, function(x) x$pred)
 
-            # prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
-            
             if (mix_model_num == 1) {
                 wws = get_ww(Nstar,t,Ystar,x1[!ry,],x2[!ry,],pi1,pi2,pi3,U1,U2,U3,S1,S2,S3)
                 ww1 = wws$w1; ww2 = wws$w2; ww3 = wws$w3
-                # RRG
-                # if (t == 1) {
-                #     prediction = (ww1 * lr_prediction1 + ww2 * lr_prediction2) / (1 - ww3)
-                # } else {
-                    prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
-                # }
+                prediction = ww1 * lr_prediction1 + ww2 * lr_prediction2 + ww3 * gp_prediction
             } else {
-                # GP
                 prediction = gp_prediction
             }
         }
@@ -355,7 +317,8 @@ mixtureMITemporalImputeTest <- function(pv_tensor,
     if (obs_only) {
         r_vlist = list()
         num_time_point = length(pv_tensor)
-        for (v in 2:14) {
+        num_var <- dim(pv_tensor[[1]])[2]
+        for (v in 2:num_var) {
             pt_list <- vector('list',num_time_point)
             for (t in 1:num_time_point) {
                 pt_list[[t]] <- pv_tensor[[t]][,v]

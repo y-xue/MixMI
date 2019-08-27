@@ -59,14 +59,16 @@ simple_yhat <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 }
 
 simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
+	# Adapted code from GPfit[1].
+	# [1] MacDonald, B., Ranjan, P., & Chipman, H. (2013).
+	# GPfit: an R package for Gaussian process model fitting 
+	# using a new optimization algorithm. arXiv preprint arXiv:1305.0759.
+
 	res = list(0,0)
 	names(res) = c("yhat","mse")
 	if (length(Y) == 0 || length(unique(Y)) == 1) {
 		res$yhat = unique(Y)
 		res$mse = NA
-	# } else if (length(Y) < 4) {
-	# 	res$yhat = NA
-	# 	res$mse = NA
 	} else {
 
 		if (is.matrix(X) == FALSE){
@@ -81,11 +83,6 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 		One = rep(1,n);
 		R = cov_func(beta,X,X);
 		delta = 0
-		# temp = eigen(R,symmetric = TRUE, only.values = TRUE);
-		# eig_val = temp$values;
-		# condnum = kappa(R,triangular = TRUE,exact=TRUE);
-		# max_eigval = eig_val[1];
-		# delta = max(c(0,abs(max_eigval)*(condnum-exp(nug_thres))/(condnum*(exp(nug_thres)-1))));
 
 		LO = diag(n);
 		Sig = R + delta*LO;
@@ -102,7 +99,6 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 		if (delta == 0){
 			Sig_invLp = solve(L,solve(t(L),LO));
 		} else {
-		## Adding in the itterative approach section
 			s_Onei = One;
 			s_Yi = Y;
 			s_Li = LO;
@@ -130,7 +126,6 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 		if (delta == 0) {
 			Sig_invr = solve(L,solve(t(L),r));
 		} else {
-			## if delta != 0, start itterations
 			s_ri = r;
 			Sig_invr = matrix(0, ncol = 1, nrow = n);
 			for (it in 1:M)
@@ -147,18 +142,6 @@ simple_GP_pred <- function(beta, X, Y, xnew, nug_thres=20, power=1.95, M=1) {
 		res$mse = mse*(mse>0)
 
 		if (res$mse <= 0) {
-			# gpmod = GP_fit(X,Y)
-			# gpmod$beta=beta
-			# gpmod$sig2=sig2
-			# mse = predict.GP(gpmod, xnew)$MSE
-			# print(X)
-			# print(Y)
-			# print(xnew)
-			# print(beta)
-			# print(sprintf("mse: %s",res$mse))
-			# print(sprintf("mse from GP_fit: %s",mse))
-			# res$mse = mse
-
 			print("mse == 0. set to 1e-8")
 			res$mse = 1e-8
 			
@@ -173,12 +156,8 @@ Rinverse <- function(l, gpx, nug_thres=20) {
 		return(NULL)
 	}
 
-	# print(gpx)
-
 	R = cov_func(l,gpx,gpx)
 
-	# print(R)
-	
 	temp = eigen(R,symmetric = TRUE, only.values = TRUE);
 	eig_val = temp$values;
 
@@ -197,79 +176,6 @@ Rinverse <- function(l, gpx, nug_thres=20) {
 	return(Rinv)
 }
 
-# sig2 <- function(l, Y, gpx, Rinv=NULL, nug_thres=20) {
-# 	if (length(Y) == 0 || length(unique(Y)) == 1) {
-# 		return(NA)
-# 	}
-
-# 	n = length(gpx)
-
-# 	if (is.null(Rinv)) {
-# 		Rinv = Rinverse(l,gpx)
-# 	}
-
-# 	m1n = matrix(rep(1,length(gpx)),length(gpx),1)
-# 	ITRI = (t(m1n)%*%Rinv%*%m1n)[1,]
-# 	ITRY = (t(m1n)%*%Rinv%*%Y)[1,]
-	
-# 	part4 = Y - m1n %*% (ITRY / ITRI)
-# 	sigma2 = 1/n * (t(part4) %*% Rinv %*% part4)
-
-# 	return(sigma2)
-# }
-
-# s2 <- function(l,gpsig2,i,i.bar,Y,Rinv=NULL,nug_thres=20) {
-# 	if (is.na(gpsig2)) {
-# 		return(NA)
-# 	}
-
-# 	ki <- cov_func(l,i,i.bar)
-	
-# 	if (is.null(Rinv)) {
-# 		Rinv = Rinverse(l,i.bar)
-# 	}
-# 	kiT <- t(ki)
-# 	m1n <- matrix(rep(1,length(i.bar)),length(i.bar),1)
-
-# 	mse = gpsig2 * (1 - ki%*%Rinv%*%kiT + (1 - t(m1n)%*%Rinv%*%kiT)^2/(t(m1n)%*%Rinv%*%m1n))
-
-# 	# to change
-# 	if (mse <= 0) {
-# 		print(mse)
-# 		print(l)
-# 		print(i.bar)
-# 		print(Y)
-# 		print(i)
-# 		print(gpsig2)
-# 		print(Rinv)
-# 		gpmod = GP_fit(i.bar,Y)
-# 		gpmod$beta=l
-# 		gpmod$sig2=gpsig2
-# 		mse = predict.GP(gpmod, i)$MSE
-# 	}
-
-# 	return(mse)
-# }
-
-# yhat <- function(l,i,i.bar,Yi_1,Rinv=NULL) {
-# 	if (length(Yi_1) == 0) {
-# 		return(Inf)
-# 	}
-# 	if (length(unique(Yi_1)) == 1) {
-# 		return(unique(Yi_1))
-# 	}
-
-# 	if (is.null(Rinv)) {
-# 		Rinv = Rinverse(l,i.bar)
-# 	}
-	
-# 	ki <- cov_func(l,i,i.bar)
-
-# 	m1n <- matrix(rep(1,length(i.bar)),length(i.bar),1)
-
-# 	return((((1-ki%*%Rinv%*%m1n) / (t(m1n)%*%Rinv%*%m1n)) %*% t(m1n) + ki) %*% Rinv %*% Yi_1)
-# }
-
 fit_gp <- function(xtr,ytr) {
 	if (length(unique(ytr)) == 1) {
 		ytr[1] = ytr[1] + 0.000001
@@ -277,7 +183,6 @@ fit_gp <- function(xtr,ytr) {
     }
 	
 	if (length(ytr) <= 1) {
-		# gpmod = list(-3)
 		gpmod = list(NA)
 		names(gpmod) = c("beta")
 	}
@@ -297,14 +202,7 @@ gp_predict_one_rt <- function(l, xtr, ytr, xte, Rinv=NULL) {
 		res$mse = 0
 		res$idx = TRUE
 	}
-	# else if (length(ytr) == 2) {
- #        res$pred = approx(xtr,ytr,xte,rule=2)$y
- #        res$mse = 0
- #        res$idx = TRUE
- #    }
 	else {
-		# res$pred = yhat(l,xte,xtr,ytr,Rinv=Rinv)
-		# res$mse = s2(l,sig2(l, ytr, xtr, Rinv=Rinv),xte,xtr,ytr,Rinv=Rinv)
 		gp_pred = simple_GP_pred(l,xtr,ytr,xte)
 		res$pred = gp_pred$yhat
 		res$mse = gp_pred$mse

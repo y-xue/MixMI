@@ -103,15 +103,10 @@ L_GP <- function(wgp,pi_gp,U3,S3,X,l,Yobs,Y,s,xte,xtr,Rinv,epsilon=1e-8) {
 		loglik = wgp * log_with_limits(L2,epsilon)
 	}
 	else {
-		# gp_sigma2 <- sig2(l,Yobs,xtr,Rinv=Rinv)
-		# m <- yhat(l,xte,xtr,Yobs,Rinv=Rinv)
-		# k <- s2(l,gp_sigma2,xte,xtr,Yobs,Rinv=Rinv)
 		gp_pred = simple_GP_pred(l,xtr,Yobs,xte)
 		m = gp_pred$yhat
 		k = gp_pred$mse
-		# loglik <- loglik + wgp[i]*log(pi_gp*dnorm(S[i],m,sqrt(k))/wgp[i])
 		p2 = dnorm(s,m,sqrt(k)) * dmvnorm(X,U3,S3)
-		# p2 = round(p2,digits=8)
 		if (wgp == 0) {
 			loglik = log_with_limits(pi_gp*p2,epsilon)
 		}
@@ -127,15 +122,9 @@ simple_L <- function(wgp,pi_gp,l,X,U3,S3,s,xtr,ytr,xte,epsilon=1e-8) {
 	gp_pred = simple_GP_pred(l,xtr,ytr,xte)
 	m = gp_pred$yhat
 	k = gp_pred$mse
-	# print(m)
-	# print(k)
+
 	p2 = dnorm(s,m,sqrt(k)) * dmvnorm(X,U3,S3)
-	# print(dmvnorm(X[x,],U3,S3))
-	# print(dnorm(S[x],m,sqrt(k)))
-	# print(p2)
 	L2 = pi_gp * p2 / wgp
-	# print(L2)
-	# loglik = wgp * log_with_limits(L2,epsilon)
 	loglik = wgp * log(L2)
 	return(loglik)	
 }
@@ -172,78 +161,6 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 		prev_l <- l
 
 		g <- sum(unlist(mclapply(1:N, function(x) L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
-		
-		# lst1 = unlist(mclapply(1:N, function(x) {
-		# 	y = Y[x,-xstar][r_v[x,]]
-			
-		# 	Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
-		# 	gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
-			
-		# 	gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-		# 	gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-
-		# 	rgx = (gx0 - gx1)/(2*1e-4)
-			
-		# 	diff = gx-rgx
-		# 	diff
-			
-		# },mc.cores=20))
-
-
-		# lst2 = sapply(1:N, function(x) {
-		# 	Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
-		# 	gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
-		# 	gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
-		# 	gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
-
-		# 	rgx = (gx0 - gx1)/(2*1e-4)
-			
-		# 	diff = gx-rgx
-		# 	diff
-		# })
-
-		# lst3 = sapply(1:N, function(x) dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x]))
-
-		# lst4 = rep(0,N)
-		# for (x in 1:N) {
-		# 	lst4[x] = dff(wgp[x],pi_gp,prev_l,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],Y[x,-xstar][r_v[x,]],xte_vec[x])
-		# }
-
-		# lst5 = rep(0,N)
-		# for (x in 1:5) {
-			
-		# 	y = Y[x,-xstar][r_v[x,]]
-			
-		# 	if (length(y) >= 3 && length(unique(y)) != 1) {
-		# 		Rinv = solve(cov_func(prev_l,xtr_vec[x,][r_v[x,]],xtr_vec[x,][r_v[x,]]))
-		# 		gx = L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv)
-				
-		# 		gx0 = simple_L(wgp[x],pi_gp,prev_l+1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-		# 		gx1 = simple_L(wgp[x],pi_gp,prev_l-1e-4,X,U3,S3,S[x],xtr_vec[x,][r_v[x,]],y,xte_vec[x])
-
-		# 		rgx = (gx0 - gx1)/(2*1e-4)
-			
-		# 	}
-		# 	diff = gx-rgx
-		# 	lst5[x] = diff
-		# }
-
-		# print(lst5[1:5])
-		# print(lst4[1:5])
-		# print(lst3[1:5])
-		# print(lst2[1:5])
-		# print(lst1[1:5])
-		# lst1 = lst1[!is.na(lst1)]
-		# print(sum(lst1>1e-4))
-
-		# print(sum(lst5-lst4))
-		# print(sum(lst5-lst3))
-		# print(sum(lst5-lst2))
-		# print(sum(lst5-lst1))
-
-		# for (x in 1:N) {
-		# 	L_dl(wgp[x],prev_l,Y[x,-xstar][r_v[x,]],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
-		# }
 
 		m = beta1 * prev_m + (1-beta1) * g
 		v = beta2 * prev_v + (1-beta2) * g^2
@@ -253,15 +170,10 @@ Adam_one_obs_only <- function(wgp,pi_gp,U3,S3,X,Y,S,xte_vec,xtr_vec,Rinv_lst,xst
 
 		l <- prev_l + m_hat * tao / (sqrt(v_hat) + epsilon)
 
-		# ptm <- proc.time()
 		Rinv_lst = mclapply(1:N, function(x) Rinverse(l,xtr_vec[x,][r_v[x,]]), mc.cores=num_cores)
 
 		loglik = sum(unlist(mclapply(1:N, function(x) L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]]), mc.cores=num_cores)))
-		# loglik = 0
-		# for (x in 1:N) {
-		# 	loglik = loglik + L_GP(wgp[x],pi_gp,U3,S3,X[x,],l,Y[x,-xstar][r_v[x,]],Y[x,-xstar],S[x],xte_vec[x],xtr_vec[x,][r_v[x,]],Rinv_lst[[x]])
-		# }
-
+		
 		print(round(loglik,1))
 
 		if (loglik > max_loglik) {
