@@ -69,9 +69,9 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
     pi1 = (1-pi3)/2
     pi2 = (1-pi3)/2
     
-    pi_1_m = array(pi1,dim=c(14,num_time_point,m))
-    pi_2_m = array(pi2,dim=c(14,num_time_point,m))
-    pi_3_m = array(pi3,dim=c(14,num_time_point,m))
+    pi_1_m = array(pi1,dim=c(num_var,num_time_point,m))
+    pi_2_m = array(pi2,dim=c(num_var,num_time_point,m))
+    pi_3_m = array(pi3,dim=c(num_var,num_time_point,m))
 
     w1_lst = list()
     w2_lst = list()
@@ -93,8 +93,8 @@ sampler <- function(pv_tensor, prt_m, artificial_prt_tensor, ori_tensor, model_t
     mix_model_1_param = list(pi_1_m,pi_2_m,pi_3_m,w1_lst,w2_lst,w3_lst)
     names(mix_model_1_param) = c("pi_1_m","pi_2_m","pi_3_m","w1_lst","w2_lst","w3_lst")
 
-    pi_1_m = array(0.5,dim=c(14,num_time_point,m))
-    pi_2_m = array(0.5,dim=c(14,num_time_point,m))
+    pi_1_m = array(0.5,dim=c(num_var,num_time_point,m))
+    pi_2_m = array(0.5,dim=c(num_var,num_time_point,m))
     mix_model_2_param = list(pi_1_m,pi_2_m,w1_lst,w2_lst)
     names(mix_model_2_param) = c("pi_1_m","pi_2_m","w1_lst","w2_lst")
 
