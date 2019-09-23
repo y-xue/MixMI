@@ -119,8 +119,6 @@ self_denorm <- function(V, hmax, hmin, center=F, logt=F, fncf='mixtureMITemporal
 }
 
 denorm_dir <- function(cdn, out_cdn, hmax, hmin, center=F, logt=F) {
-	source('self_denorm.R')
-	
 	tv_tensor = tv_tensor_generator(cdn)
 
 	imp_tv_tensor = self_denorm(tv_tensor, hmax, hmin)
