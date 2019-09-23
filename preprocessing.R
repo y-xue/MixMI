@@ -1,3 +1,16 @@
+tv_tensor_generator <- function(cdn) {
+	cat('tv_tensor_generator\n')
+
+	file_list = sort(list.files(cdn))
+	num_pt = length(file_list)
+	df_list = vector('list',num_pt)
+	
+	for (i in 1:length(file_list)) {
+		df_list[[i]] = read.csv(sprintf("%s/%s",cdn,file_list[i]))
+	}
+	return(df_list)
+}
+
 unfold_tensor_by_patients <- function(nimp,dir,out_dir,filename_list,tp,impi=1,iter=0,normpred=FALSE) {
     for (imp_i in impi:nimp) {
 		print(imp_i)
