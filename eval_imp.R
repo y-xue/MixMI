@@ -2,6 +2,7 @@ eval_imp <- function(cdn, nimp, iteri, norm_res_fn, file_list_fn, tp, ori_dir, m
 	source('preprocessing.R')
 	source('mase.R')
 
+
 	load(norm_res_fn)
 	load(file_list_fn)
 
@@ -30,4 +31,4 @@ marking_dir = "/home/yxe836/micegp/data/LabViewCase_11tp_1measure_norm_20mispcnt
 nimp=3
 iteri=2
 tp=11
-eval_imp <- function(cdn, nimp, iteri, norm_res_fn, file_list_fn, tp, ori_dir, marking_dir, denorm=TRUE) {
+eval_imp(cdn, nimp, iteri, norm_res_fn, file_list_fn, tp, ori_dir, marking_dir, denorm=TRUE)
