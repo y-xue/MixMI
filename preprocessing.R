@@ -11,6 +11,18 @@ tv_tensor_generator <- function(cdn) {
 	return(df_list)
 }
 
+write_tv_tensor <- function(tv_tensor, out_cdn, file_list) {
+	dir.create(out_cdn,recursive=TRUE)
+
+	print(length(tv_tensor))
+	print(length(file_list))
+
+	for (i in 1:length(tv_tensor)) {
+		data = tv_tensor[[i]]
+		write.csv(data, file=sprintf("%s/%s",out_cdn,file_list[[i]]), row.names=FALSE)
+	}
+}
+
 unfold_tensor_by_patients <- function(nimp,dir,out_dir,filename_list,tp,impi=1,iter=0,normpred=FALSE) {
     for (imp_i in impi:nimp) {
 		print(imp_i)
