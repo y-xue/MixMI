@@ -1,7 +1,7 @@
 eval_imp <- function(cdn, nimp, iteri, norm_res_fn, file_list_fn, tp, ori_dir, marking_dir,denorm=FALSE) {
 	source('preprocessing.R')
 	source('mase.R')
-
+	source('mixtureMITemporalConfig.R')
 
 	load(norm_res_fn)
 	load(file_list_fn)
@@ -19,7 +19,7 @@ eval_imp <- function(cdn, nimp, iteri, norm_res_fn, file_list_fn, tp, ori_dir, m
 		denorm_dir(combined_dir, denorm_imp_dir, hmax, hmin)
 	}
 
-	cal_MASE_file(ori_dir, marking_dir, denorm_imp_dir, cdn, fn=sprintf("mase_nmis_%simp_iter%s.csv",nimp,iteri), ts=FALSE)
+	cal_MASE_file(ori_dir, marking_dir, denorm_imp_dir, cdn, tests, fn=sprintf("mase_nmis_%simp_iter%s.csv",nimp,iteri), ts=FALSE)
 }
 
 cdn = "/home/yxe836/micegp/non-equidistant_experiments/mimic_11tp_1measure_norm_20mispcnt_test/real/joint_both_sameXweight31_em30_pi3_0.1_3imp_exclude_HGB"

@@ -1,5 +1,4 @@
 MASE <- function(ori_df, marking_df, imp_df, tests, ts=TRUE) {
-	# source('mixtureMITemporalConfig.R')
 	mis_col = rep(0,length(tests))
 	mase_vec = rep(0,length(tests))
 	names(mis_col) = tests # colnames(ori_df)
@@ -48,7 +47,6 @@ MASE <- function(ori_df, marking_df, imp_df, tests, ts=TRUE) {
 }
 
 cal_MASE_file <- function(ori_dir, marking_dir, imp_dir, out_dir, tests, fn="", ts=TRUE, wr=TRUE) {
-	# source('mixtureMITemporalConfig.R')
 	dir.create(out_dir,recursive=TRUE)
 	
 	file_list = sort(list.files(ori_dir))
